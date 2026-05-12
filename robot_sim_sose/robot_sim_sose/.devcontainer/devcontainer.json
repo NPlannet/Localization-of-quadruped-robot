@@ -1,0 +1,34 @@
+{
+    "name": "Gazebo Jazzy GPU",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "runArgs": [
+        "--name=gazebo_jazzy",
+        "--gpus=all",
+        "--network=host",
+        "--ipc=host",
+        "--privileged"
+    ],
+    "workspaceFolder": "/workspaces/robot_sim_sose",
+    
+    "mounts": [
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
+    ],
+    "containerEnv": {
+        "DISPLAY": "${localEnv:DISPLAY}",
+        "QT_X11_NO_MITSHM": "1",
+        "NVIDIA_DRIVER_CAPABILITIES": "all",
+        "__NV_PRIME_RENDER_OFFLOAD": "1",
+        "__GLX_VENDOR_LIBRARY_NAME": "nvidia",
+        "SHELL": "/bin/bash",
+        "ROS_DOMAIN_ID": "42"
+    },
+   
+    // This runs automatically when the container starts
+    "remoteUser": "maher",
+    "containerUser": "maher",
+    // This ensures your .bashrc is ready
+    "postCreateCommand": "sudo chown maher:maher /home/maher/.bashrc && echo 'source /opt/ros/jazzy/setup.bash' >> /home/maher/.bashrc"
+}
