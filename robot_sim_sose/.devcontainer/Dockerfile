@@ -2,12 +2,12 @@ FROM osrf/ros:jazzy-desktop-full
 
 # Use root to setup the user
 USER root
-
-ARG USERNAME=maher
+# change username to whatever is your shell username
+ARG USERNAME=nikla
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-# Rename existing 'ubuntu' user to 'maher' to match Host UID
+# Rename existing 'ubuntu' user to 'nikla' to match Host UID
 RUN if id -u $USER_UID >/dev/null 2>&1; then \
         EXISTING_USER=$(getent passwd $USER_UID | cut -d: -f1); \
         usermod -l $USERNAME $EXISTING_USER; \
@@ -21,11 +21,12 @@ RUN if id -u $USER_UID >/dev/null 2>&1; then \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
-RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/maher/.bashrc, 
+RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc \
+    && chown $USERNAME:$USERNAME /home/$USERNAME/.bashrc
 
 
 # Force bash as the default shell for the user
-#RUN chsh -s /bin/bash maher
+#RUN chsh -s /bin/bash nikla
 #SHELL ["/bin/bash", "-c"]
 
 USER $USERNAME
