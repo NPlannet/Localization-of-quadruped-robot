@@ -30,7 +30,7 @@ class NaoJointMover(Node):
         
         # Log the current angle every 20 iterations to avoid spamming the console
         if int(self.counter * 10) % 10 == 0:
-            self.get_logger().info(f'Joint Angle: {msg.data:.2f} rad')x
+            self.get_logger().info(f'Joint Angle: {msg.data:.2f} rad')
             
         self.counter += 0.05 # Increment to move the "wave" forward
 

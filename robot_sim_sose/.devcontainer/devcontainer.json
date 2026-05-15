@@ -34,8 +34,8 @@
         "ROS_DOMAIN_ID": "42"
     },
 
-    "remoteUser": "nikla",
-    "containerUser": "nikla",
+    "remoteUser": "ros",
+    "containerUser": "ros",
 
     "postCreateCommand": "true"
 }

@@ -1,0 +1,19 @@
+services:
+  ros-dev:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    container_name: gazebo_jazzy
+    network_mode: host
+    ipc: host
+    privileged: true
+    environment:
+      DISPLAY: ${DISPLAY}
+      QT_X11_NO_MITSHM: "1"
+      ROS_DOMAIN_ID: "42"
+      SHELL: /bin/bash
+    volumes:
+      - .:/workspaces/robot_sim_sose:cached
+      - /tmp/.X11-unix:/tmp/.X11-unix:cached
+    working_dir: /workspaces/robot_sim_sose
+    command: sleep infinity

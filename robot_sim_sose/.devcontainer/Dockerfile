@@ -2,12 +2,13 @@ FROM osrf/ros:jazzy-desktop-full
 
 # Use root to setup the user
 USER root
-# change username to whatever is your shell username
-ARG USERNAME=nikla
+# Generic user inside the container. This does not need to match the host username.
+ARG USERNAME=ros
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-# Rename existing 'ubuntu' user to 'nikla' to match Host UID
+# Rename an existing UID 1000 user, or create one, so mounted files are writable
+# on the common Linux/WSL setup where the host user also has UID 1000.
 RUN if id -u $USER_UID >/dev/null 2>&1; then \
         EXISTING_USER=$(getent passwd $USER_UID | cut -d: -f1); \
         usermod -l $USERNAME $EXISTING_USER; \
@@ -26,7 +27,7 @@ RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc \
 
 
 # Force bash as the default shell for the user
-#RUN chsh -s /bin/bash nikla
+#RUN chsh -s /bin/bash $USERNAME
 #SHELL ["/bin/bash", "-c"]
 
 USER $USERNAME

@@ -4,12 +4,14 @@ from launch import LaunchDescription
 
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
+from launch.substitutions import LaunchConfiguration
 
-from launch.actions import IncludeLaunchDescription, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
 
 def generate_launch_description():
 
     pkg_share = get_package_share_directory('xgo_description')
+    default_world = os.path.join(pkg_share, 'worlds', 'slam_test_world.sdf')
 
     # Add this action to set the path automatically
     set_gz_resource_path = SetEnvironmentVariable(
@@ -28,7 +30,7 @@ def generate_launch_description():
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')]),
-        launch_arguments={'gz_args': '-r empty.sdf'}.items(),
+        launch_arguments={'gz_args': ['-r ', LaunchConfiguration('world')]}.items(),
     )
 
     # 2. Robot State Publisher
@@ -49,6 +51,11 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'world',
+            default_value=default_world,
+            description='Absolute path to the Gazebo world SDF file.',
+        ),
         set_gz_resource_path,  # Add this here
         gz_sim,
         robot_state_publisher,

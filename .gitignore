@@ -1,2 +1,18 @@
-.devcontainer/devcontainer.json
-.github/dependabot.yml
+# ROS / colcon build outputs
+robot_sim_sose/build/
+robot_sim_sose/install/
+robot_sim_sose/log/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Local editor and assistant state
+.vscode/
+.agents/
+.codex/
+
+# OS/editor noise
+.DS_Store
+*~
+*.swp
