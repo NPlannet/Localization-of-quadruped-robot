@@ -60,6 +60,8 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
+After the first container rebuild, the shortcut command `cbs` is available in interactive container shells. It runs `colcon build --symlink-install` and then sources `install/setup.bash`.
+
 ## 5. Run the Simulation
 
 Use the faster launch file with simplified collision geometry:

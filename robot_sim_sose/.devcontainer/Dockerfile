@@ -23,6 +23,9 @@ RUN if id -u $USER_UID >/dev/null 2>&1; then \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc \
+    && echo "cd /workspaces/robot_sim_sose 2>/dev/null || true" >> /home/$USERNAME/.bashrc \
+    && echo "[ -f install/setup.bash ] && source install/setup.bash" >> /home/$USERNAME/.bashrc \
+    && echo "cbs() { colcon build --symlink-install && source install/setup.bash; }" >> /home/$USERNAME/.bashrc \
     && chown $USERNAME:$USERNAME /home/$USERNAME/.bashrc
 
 
