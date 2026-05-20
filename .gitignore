@@ -3,6 +3,9 @@ robot_sim_sose/build/
 robot_sim_sose/install/
 robot_sim_sose/log/
 
+# images made with the camera
+*.png
+
 # Python cache files
 __pycache__/
 *.py[cod]
