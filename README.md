@@ -60,3 +60,11 @@ Run the bridge and image saver file
 ros2 run ros_gz_bridge parameter_bridge /camera/image_raw@sensor_msgs/msg/Image@gz.msgs.Image
 python3 image_saver.py
 ```
+
+## 7. exploration
+
+Run the bridge and explore file
+```bash
+ros2 run ros_gz_bridge parameter_bridge /cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist
+python3 explore.py
+```
