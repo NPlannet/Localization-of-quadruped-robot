@@ -3,10 +3,6 @@ Welcome to our semester project, the localization of a quadruped robot.
 
 Install Docker before building the project.
 
-- Linux: install Docker Engine or Docker Desktop.
-- Windows: install Docker Desktop and enable WSL 2 integration for your Linux distro.
-- macOS: install Docker Desktop. Gazebo GUI support may depend on your machine and display setup.
-
 Check that Docker works:
 
 ```bash
@@ -49,5 +45,18 @@ source install/setup.bash
 
 ```bash
 export DISPLAY=host.docker.internal:0.0
+start XLaunch with
+- multiple windows
+- start no client
+- disable access control
+
+ros2 launch xgo_description gazebo_fast.launch.py
+```
+
+## 6. save images
+
+Run the bridge and image saver file
+```bash
 ros2 run ros_gz_bridge parameter_bridge /camera/image_raw@sensor_msgs/msg/Image@gz.msgs.Image
+python3 image_saver.py
 ```
