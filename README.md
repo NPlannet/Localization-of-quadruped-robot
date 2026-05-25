@@ -57,7 +57,6 @@ ros2 launch xgo_description gazebo_fast.launch.py
 
 Run the bridge and image saver file
 ```bash
-ros2 run ros_gz_bridge parameter_bridge /camera/image_raw@sensor_msgs/msg/Image@gz.msgs.Image
 python3 image_saver.py
 ```
 
@@ -65,6 +64,5 @@ python3 image_saver.py
 
 Run the bridge and explore file
 ```bash
-ros2 run ros_gz_bridge parameter_bridge /cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist
 python3 explore.py
 ```
