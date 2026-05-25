@@ -92,8 +92,19 @@ def launch_setup(context, *args, **kwargs):
         arguments=['-name', 'xgo_robot', '-string', robot_desc],
         output='screen',
     )
-
-    return [gz_sim, robot_state_publisher, spawn_entity]
+    
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=[
+            '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+            '/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry',
+            '/camera/image_raw@sensor_msgs/msg/Image@gz.msgs.Image',
+        ],
+        output='screen'
+    )
+    
+    return [gz_sim, robot_state_publisher, spawn_entity, bridge]
 
 
 def generate_launch_description():
