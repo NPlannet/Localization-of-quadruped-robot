@@ -24,6 +24,9 @@ class RobotController(Node):
             self.odom_callback,
             10
         )
+        self.current_x = 0.0
+        self.current_y = 0.0
+
         
     def odom_callback(self, msg):
         q = msg.pose.pose.orientation
@@ -31,18 +34,23 @@ class RobotController(Node):
             [q.x, q.y, q.z, q.w]
         )
         self.current_yaw = yaw
+        self.current_x = msg.pose.pose.position.x
+        self.current_y = msg.pose.pose.position.y
         
     def stop(self):
         msg = Twist()
         self.cmd_pub.publish(msg)
 
     def move_forward(self, distance, speed=0.5):
+        start_x = self.current_x
+        start_y = self.current_y
+    
         msg = Twist()
         msg.linear.x = speed
-        duration = abs(distance / speed)
-        start_time = time()
-
-        while( time() - start_time < duration):
+        
+        traveled = 0
+        while(traveled < distance):
+            traveled = ((self.current_x - start_x)**2 + (self.current_y - start_y)**2)**0.5
             self.cmd_pub.publish(msg)
             rclpy.spin_once(self, timeout_sec=0.01)
 
