@@ -28,8 +28,17 @@
                iyy="0.01" iyz="0"
                izz="0.01"/>
     </inertial>
-
   </link>
+  <gazebo reference="base_link">
+    <sensor name="imu_sensor" type="imu">
+      
+      <always_on>true</always_on>
+      <update_rate>50</update_rate>
+      <visualize>true</visualize>
+
+      <topic>/imu</topic>
+    </sensor>
+  </gazebo>
 
 
   <link name="front_left_wheel">
@@ -305,7 +314,7 @@
       <ray>
         <scan>
           <horizontal>
-            <samples>5</samples>
+            <samples>10</samples>
             <resolution>1</resolution>
             <min_angle>-1.396263</min_angle>
             <max_angle>1.396263</max_angle>
