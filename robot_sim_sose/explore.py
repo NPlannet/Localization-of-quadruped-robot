@@ -1,5 +1,4 @@
-from math import radians, atan2, cos, sin
-from time import sleep
+from math import radians, atan2, cos, sin, isfinite
 import tf_transformations
 
 import rclpy
@@ -18,7 +17,7 @@ class RobotController(Node):
 
         self.cmd_pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
-        self.create_subscription(LaserScan, '/lidar', self.lidar_callback, 10)
+        self.create_subscription(LaserScan, '/scan', self.scan_callback, 10)
         self.create_subscription(Imu, '/imu', self.imu_callback, 10)
         self.create_subscription(Image, '/camera/image_raw', self.camera_callback, 10)
 
@@ -27,10 +26,14 @@ class RobotController(Node):
         self.current_y = 0.0
         
         self.lidar_ranges = None
+        self.front_distance = float('inf')
+        self.left_distance = float('inf')
+        self.right_distance = float('inf')
         self.imu_data = None
         self.camera_image = None
         
         self.bridge = CvBridge()
+        self.explore_timer = self.create_timer(0.1, self.explore_step)  # this calls explore step every 0.1 seconds
         
     def odom_callback(self, msg):
         q = msg.pose.pose.orientation
@@ -39,9 +42,16 @@ class RobotController(Node):
         self.current_x = msg.pose.pose.position.x
         self.current_y = msg.pose.pose.position.y
     
-    def lidar_callback(self, msg):
+    def scan_callback(self, msg):
         self.lidar_ranges = msg.ranges
-        self.get_logger().info(f"LIDAR received:\n{msg}")
+        self.front_distance = get_range_at_angle(msg, 0)
+        self.left_distance = get_range_at_angle(msg, 45)
+        self.right_distance = get_range_at_angle(msg, -45)
+        self.get_logger().info(
+            f"LIDAR DISTANCES: front={self.front_distance:.2f}, "
+            f"left={self.left_distance:.2f}, right={self.right_distance:.2f}"
+        )
+        # self.get_logger().info(f"LIDAR received:\n{msg}")
 
         
     def imu_callback(self, msg):
@@ -60,6 +70,7 @@ class RobotController(Node):
     def stop(self):
         msg = Twist()
         self.cmd_pub.publish(msg)
+
 
     def move_forward(self, distance, speed=0.5):
         start_x = self.current_x
@@ -91,17 +102,56 @@ class RobotController(Node):
     
         self.stop()
 
-def dummy_explore():
+
+    def explore_step(self):
+        msg = Twist()
+
+        if self.front_distance < 0.6:
+            msg.angular.z = 0.6 if self.left_distance > self.right_distance else -0.6
+        else:
+            msg.linear.x = 0.25
+
+            if self.left_distance < 0.4:
+                msg.angular.z = -0.3
+            elif self.right_distance < 0.4:
+                msg.angular.z = 0.3
+
+        self.cmd_pub.publish(msg)
+
+
+def dynamic_explore():
     rclpy.init()
     robot = RobotController()
-    while(True):
-        print("forward")
-        robot.move_forward(1.0)
-        sleep(1)
-        print("rotate")
-        robot.rotate(90)
-        sleep(1)
+
+    try:
+        rclpy.spin(robot)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        robot.stop()
+        robot.destroy_node()
+        rclpy.shutdown()
     
 
+
+def get_range_at_angle(scan, target_angle_deg, width_deg=10):
+    target = radians(target_angle_deg)
+    width = radians(width_deg)
+
+    values = []
+
+    for i, distance in enumerate(scan.ranges):
+        angle = scan.angle_min + i * scan.angle_increment
+
+        if abs(angle - target) <= width / 2:
+            if isfinite(distance):
+                values.append(distance)
+
+    if not values:
+        return float('inf')
+
+    return min(values)
+
+
 if __name__ == '__main__':
-    dummy_explore()
+    dynamic_explore()

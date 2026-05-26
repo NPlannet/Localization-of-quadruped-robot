@@ -44,6 +44,7 @@ source install/setup.bash
 ## 5. Run the simulation
 
 ```bash
+(not necessary in WSL2)
 export DISPLAY=host.docker.internal:0.0
 start XLaunch with
 - multiple windows
@@ -52,6 +53,18 @@ start XLaunch with
 
 ros2 launch xgo_description gazebo_fast.launch.py
 ```
+
+# 6. run SLAM
+```bash
+open a new terminal in the docker image and run :
+ros2 launch slam_toolbox online_async_launch.py slam_params_file:=/workspaces/robot_sim_sose/src/xgo_description/config/slam_toolbox.yaml
+
+you can look at the map being build using rviz2:
+    1. open a new terminal in the docker image
+    2. run rviz2
+    3. click on ADD button on the bottom left and add map aswell as odom
+```
+
 
 ## 6. save images
 
