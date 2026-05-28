@@ -56,7 +56,7 @@ ros2 launch xgo_description gazebo_fast.launch.py
 
 # 6. run SLAM
 ```bash
-open a new terminal in the docker image and run :
+open a new terminal in the docker image and run:
 ros2 launch slam_toolbox online_async_launch.py slam_params_file:=/workspaces/robot_sim_sose/src/xgo_description/config/slam_toolbox.yaml
 
 you can look at the map being build using rviz2:
@@ -66,16 +66,17 @@ you can look at the map being build using rviz2:
 ```
 
 
-## 6. save images
+# 7. run the exploration
+open a new terminal in the docker image and run:
+```bash
+ros2 launch nav2_bringup navigation_launch.py use_sim_time:=True params_file:=/workspaces/robot_sim_sose/src/xgo_description/config/nav2_params.yaml
+python3 explore.py
+```
+
+
+## 8. save images
 
 Run the bridge and image saver file
 ```bash
 python3 image_saver.py
-```
-
-## 7. exploration
-
-Run the bridge and explore file
-```bash
-python3 explore.py
 ```
