@@ -82,7 +82,6 @@ class RobotController(Node):
     def save_map_image(self):
         if self.map_data is not None:
             os.makedirs("maps", exist_ok=True)
-        
             img = np.zeros_like(self.map_data, dtype=np.uint8)
         
             img[self.map_data == -1] = 128
@@ -99,16 +98,16 @@ class RobotController(Node):
         self.save_map_image()
         
         if not self.navigator.isTaskComplete():
-            self.get_logger().info("Still navigating...")
+            self.get_logger().info("Still navigating")
             return
         
         discover  = self.discover_next()
         if discover is None:
             self.get_logger().info("Nothing to discover found.")
             return
-        gx, gy, _, = discover
-        wx, wy = self.grid_to_world(gx, gy)
-        self.get_logger().info(f"Navigating to grid=({gx}, {gy}) world=({wx:.2f}, {wy:.2f})")
+        x, y, _, = discover
+        wx, wy = self.grid_to_world(x, y)
+        self.get_logger().info(f"Navigating to grid=({x}, {y}) world=({wx:.2f}, {wy:.2f})")
         self.navigate_to(wx, wy)
         
 
@@ -134,7 +133,7 @@ class RobotController(Node):
         if self.map_data is None:
             return None
     
-        frontiers = []
+        options = []
         h, w = self.map_data.shape
     
         robot_gx = int((self.current_x - self.map_info.origin.position.x)/self.map_info.resolution)
@@ -157,13 +156,13 @@ class RobotController(Node):
                     distance = (hypot(x - robot_gx, y - robot_gy)* self.map_info.resolution)
                     if distance < min_distance:
                         continue
-                    frontiers.append((x, y, distance))
+                    options.append((x, y, distance))
     
-        if not frontiers:
+        if not options:
             return None
     
-        frontiers.sort(key=lambda f: f[2])
-        return frontiers[0]
+        options.sort(key=lambda f: f[2])
+        return options[0]
 
 
 def dynamic_explore():
