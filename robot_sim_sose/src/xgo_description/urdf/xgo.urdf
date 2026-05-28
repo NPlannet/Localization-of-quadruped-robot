@@ -317,8 +317,8 @@
           <horizontal>
             <samples>360</samples>
             <resolution>1</resolution>
-            <min_angle>-1.396263</min_angle>
-            <max_angle>1.396263</max_angle>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
           </horizontal>
 
           <vertical>
@@ -330,9 +330,9 @@
         </scan>
 
         <range>
-          <min>0.08</min>
-          <max>10.0</max>
-          <resolution>0.01</resolution>
+          <min>0.02</min>
+          <max>12.0</max>
+          <resolution>0.045</resolution>
         </range>
       </ray>
 
@@ -394,11 +394,11 @@
 
       <camera>
 
-        <horizontal_fov>1.57</horizontal_fov>
+        <horizontal_fov>1.08</horizontal_fov>
 
         <image>
-          <width>640</width>
-          <height>480</height>
+          <width>1280</width>
+          <height>720</height>
           <format>R8G8B8</format>
         </image>
 
