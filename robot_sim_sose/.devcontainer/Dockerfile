@@ -19,12 +19,14 @@ RUN if id -u $USER_UID >/dev/null 2>&1; then \
         useradd --uid $USER_UID --gid $USER_GID -m $USERNAME; \
     fi \
     && apt-get update \
-    && apt-get install -y \
+    && apt-get install -y --no-install-recommends \
+        sudo \
+        x11-apps \
         ros-$ROS_DISTRO-slam-toolbox \
-        -y ros-$ROS_DISTRO-tf-transformations \
-    && apt-get install -y ros-jazzy-slam-toolbox \
-    && apt-get install \
-        x11-apps ros-jazzy-navigation2 ros-jazzy-nav2-bringup \
+        ros-$ROS_DISTRO-tf-transformations \
+        ros-$ROS_DISTRO-navigation2 \
+        ros-$ROS_DISTRO-nav2-bringup \
+    && rm -rf /var/lib/apt/lists/* \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
