@@ -37,6 +37,60 @@
       <visualize>true</visualize>
 
       <topic>/imu</topic>
+
+      <!-- unusable gyro -->
+      <!-- unusable acceleration -->
+      <!-- 
+      <angular_velocity>
+        
+        <x>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>999999</stddev>
+          </noise>
+        </x>
+
+        <y>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>999999</stddev>
+          </noise>
+        </y>
+
+        <z>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>999999</stddev>
+          </noise>
+        </z>
+
+      </angular_velocity>
+
+      <linear_acceleration>
+
+        <x>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>999999</stddev>
+          </noise>
+        </x>
+
+        <y>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>999999</stddev>
+          </noise>
+        </y>
+
+        <z>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>999999</stddev>
+          </noise>
+        </z>
+
+      </linear_acceleration>
+    -->
     </sensor>
   </gazebo>
 
