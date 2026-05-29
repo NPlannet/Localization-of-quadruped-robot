@@ -62,9 +62,71 @@ source install/setup.bash
 
 After the first container rebuild, the shortcut command `cbs` is available in interactive container shells. It runs `colcon build --symlink-install` and then sources `install/setup.bash`.
 
-## 5. Run the Simulation
+## 5. Run the LiDAR SLAM Test
 
-Use the faster launch file with simplified collision geometry:
+Open each terminal from the host in the `robot_sim_sose` folder:
+
+```bash
+cd Localization-of-quadruped-robot/robot_sim_sose
+docker compose exec ros-dev bash
+```
+
+Inside every container terminal, run:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+```
+
+Terminal 1: start Gazebo with the dynamic real-object world.
+
+```bash
+ros2 launch xgo_description real_objects.launch.py
+```
+
+Terminal 2: start slam-toolbox.
+
+```bash
+ros2 launch slam_toolbox online_async_launch.py slam_params_file:=/workspaces/robot_sim_sose/src/xgo_description/config/slam_toolbox.yaml
+```
+
+Terminal 3: open RViz with the saved SLAM layout.
+
+```bash
+ros2 launch xgo_description rviz_slam.launch.py
+```
+
+The RViz config is saved in `src/xgo_description/rviz/slam_mapping.rviz`. It opens with `map` as the fixed frame and displays `/map`, `/scan`, `/odom`, and TF.
+
+Terminal 4: drive the robot.
+
+```bash
+python3 explore.py
+```
+
+Terminal 5: monitor SLAM failure symptoms.
+
+```bash
+python3 slam_failure_monitor.py
+```
+
+What to look for:
+
+- In RViz, moving people/chairs can appear as ghost occupied cells or smeared obstacles in `/map`.
+- `slam_failure_monitor.py` reports occupied map area and `map->odom` correction jumps.
+- A failing dynamic run should show more ghost map growth and larger correction jumps than a static-world run.
+
+For comparison, repeat the same test with the static/default world in Terminal 1:
+
+```bash
+ros2 launch xgo_description gazebo_fast.launch.py
+```
+
+Then run Terminals 2 to 5 exactly the same way and compare the RViz map plus monitor output after the same amount of driving time.
+
+## 6. Other Simulation Launches
+
+Use the faster static launch file:
 
 ```bash
 ros2 launch xgo_description gazebo_fast.launch.py
@@ -82,7 +144,7 @@ The older launch file is also available:
 ros2 launch xgo_description gazebo.launch.py
 ```
 
-## 6. Stop the Container
+## 7. Stop the Container
 
 From the host terminal in `robot_sim_sose`:
 
@@ -101,52 +163,3 @@ You can also stop the container from Docker Desktop.
 ```bash
 xhost +local:docker
 ```
-
-## Legacy Notes
-
-This package contains the configuration files for building a devcontainer that uses URDF description and Gazebo Sim version 8.11.0 (Harmonic) and ROS 2 Jazzy for the Simulation.
-
-## 📋 Prerequisites
-
-Before running this package, ensure you have the following installed and configured:
-
-```bash
-1- sudo apt update
-   sudo apt install ros-jazzy-ros-gz-sim ros-jazzy-ros-gz-bridge ros-jazzy-ros-gz-interfaces ros-jazzy-robot-state-publisher ros-jazzy-xacro
-```
-
-2- install toolkit so your container can display frames in your graphics card, for Nvidia: sudo apt-get install -y nvidia-container-toolkit.
-
-3- the devcontainer.json file in this package is configured to send display frames to X11 display server for linux, if you are using another dispaly server in linux,
-you have to reconfigure the field : "mounts": [
-"source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
-]. you can know which display server you linux is using with the command: echo $XDG_SESSION_TYPE
-
-4- you have to give that the container uses you display server by running the following command in your Terminal: xhost +local:docker
-
-5- change the username that appear in different commands in the Docker file and devcontainer.json file to math the user name of your device.
-
-## ⚙️ creating and running the devcontainer
-
-- in your IDE click reopen in container, and the IDE will run and configure the container according to the commands in dockerfile and in devcontainer.json
-
-## Build the XGO_robot package:
-
-```bash
-befor you build XGO_robot, make sure you are in the the correct path: /workspaces/robot_sim_sose
-```
-
-2. build XGO_robot package: colcon build --symlink-install
-
-3. if you did not like a build and you want to change the configuration and build again, you can remove the previous build with the command:
-
-```bash
-rm -rf build/ install/ log/
-```
-
-## Running the Simulation
-
-source install/setup.bash
-ros2 launch xgo_description gazebo.launch.py or gz sim if you want to choose gazebo built-in robots.
-
-to run the demo node from your container shell.: python3 .devcontainer/check.py

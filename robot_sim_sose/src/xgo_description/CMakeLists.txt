@@ -14,6 +14,8 @@ install(DIRECTORY
     config 
     launch 
     meshes 
+    rviz
+    scripts
     worlds
     urdf
   DESTINATION share/${PROJECT_NAME}
