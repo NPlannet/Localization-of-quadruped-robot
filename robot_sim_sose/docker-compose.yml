@@ -7,6 +7,13 @@ services:
     network_mode: host
     ipc: host
     privileged: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     environment:
       DISPLAY: ${DISPLAY}
       QT_X11_NO_MITSHM: "1"
