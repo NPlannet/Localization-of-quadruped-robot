@@ -41,7 +41,7 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
-## 5. Run the simulation
+## 5. Run the simulation, including SLAM and navigation
 
 ```bash
 (not necessary in WSL2)
@@ -54,29 +54,19 @@ start XLaunch with
 ros2 launch xgo_description gazebo_fast.launch.py
 ```
 
-# 6. run SLAM
+# 6. run YOLO-detector and exploration: 
 ```bash
-open a new terminal in the docker image and run:
-ros2 launch slam_toolbox online_async_launch.py slam_params_file:=/workspaces/robot_sim_sose/src/xgo_description/config/slam_toolbox.yaml
-
-you can look at the map being build using rviz2:
-    1. open a new terminal in the docker image
-    2. run rviz2
-    3. click on ADD button on the bottom left and add map aswell as odom
-```
-
-
-# 7. run the exploration
-open a new terminal in the docker image and run:
-```bash
-ros2 launch nav2_bringup navigation_launch.py use_sim_time:=True params_file:=/workspaces/robot_sim_sose/src/xgo_description/config/nav2_params.yaml
+ros2 run yolo_detector detector_node
 python3 explore.py
 ```
 
 
-## 8. save images
-
-Run the bridge and image saver file
+# 7. Visuals (RVIZ, and camera image)
+open a new terminal in the docker image and run:
 ```bash
-python3 image_saver.py
+ros2 launch xgo_description rviz_slam.launch.py
+ros2 run rqt_image_view rqt_image_view --ros-args -r image:=/camera/image_raw
 ```
+
+
+

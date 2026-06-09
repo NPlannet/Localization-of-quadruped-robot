@@ -89,7 +89,7 @@ def launch_setup(context, *args, **kwargs):
     spawn_entity = Node(
         package='ros_gz_sim',
         executable='create',
-        arguments=['-name', 'xgo_robot', '-string', robot_desc],
+        arguments=['-name', 'xgo_robot', '-string', robot_desc, '-x', '0.0', '-y', '0.0', '-z', '0.1'],
         output='screen',
     )
     
@@ -114,6 +114,7 @@ def launch_setup(context, *args, **kwargs):
 def generate_launch_description():
     pkg_share = get_package_share_directory('xgo_description')
     default_world = os.path.join(pkg_share, 'worlds', 'slam_test_world.sdf')
+    # default_world = os.path.join(pkg_share, 'worlds', 'real_objects_world.sdf')
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -128,7 +129,7 @@ def generate_launch_description():
         ),
         SetEnvironmentVariable(
             name='GZ_SIM_RESOURCE_PATH',
-            value=[os.path.join(pkg_share, '..')],
+            value=[os.path.join(pkg_share, '..'), ':', os.path.join(pkg_share, 'meshes', 'models')],
         ),
         OpaqueFunction(function=launch_setup),
     ])
