@@ -5,6 +5,7 @@ robot_sim_sose/log/
 
 # images made with the camera
 *.png
+*.jpg
 
 # Python cache files
 __pycache__/
