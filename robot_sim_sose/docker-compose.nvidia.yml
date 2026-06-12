@@ -1,0 +1,14 @@
+services:
+  ros-dev:
+    build:
+      args:
+        TORCH_WHL_INDEX_URL: https://download.pytorch.org/whl/cu124
+    environment:
+      YOLO_DEVICE: cuda
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

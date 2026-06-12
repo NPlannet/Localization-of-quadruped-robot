@@ -25,6 +25,12 @@ Build and start the container:
 docker compose up -d --build
 ```
 
+For an NVIDIA GPU-enabled setup, add the override file:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.nvidia.yml up -d --build
+```
+
 Open a shell inside the container:
 
 ```bash
@@ -59,6 +65,11 @@ ros2 launch xgo_description gazebo_fast.launch.py
 ros2 run yolo_detector detector_node
 python3 explore.py
 ```
+
+The detector reads the `YOLO_DEVICE` environment variable.
+- Default: `auto` -> uses CUDA when available, otherwise CPU
+- AMD / non-CUDA systems: keep the default or set `YOLO_DEVICE=cpu`
+- NVIDIA systems: use `docker-compose.nvidia.yml`, which sets `YOLO_DEVICE=cuda`
 
 
 # 7. Visuals (RVIZ, and camera image)

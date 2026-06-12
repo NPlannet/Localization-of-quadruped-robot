@@ -3,6 +3,7 @@ USER root
 ARG USERNAME=ros
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
+ARG TORCH_WHL_INDEX_URL
 
 RUN if id -u $USER_UID >/dev/null 2>&1; then \
         EXISTING_USER=$(getent passwd $USER_UID | cut -d: -f1); \
@@ -26,10 +27,16 @@ RUN if id -u $USER_UID >/dev/null 2>&1; then \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
-# Python packages für YOLO mit korrekter CUDA Version
-RUN pip install --break-system-packages \
-        torch torchvision \
-        --index-url https://download.pytorch.org/whl/cu124 \
+# Python packages for YOLO. By default this installs a CPU-compatible PyTorch.
+# NVIDIA users can override TORCH_WHL_INDEX_URL during build to pull CUDA wheels.
+RUN if [ -n "$TORCH_WHL_INDEX_URL" ]; then \
+        pip install --break-system-packages \
+            torch torchvision \
+            --index-url "$TORCH_WHL_INDEX_URL"; \
+    else \
+        pip install --break-system-packages \
+            torch torchvision; \
+    fi \
     && pip install --break-system-packages \
         ultralytics \
         "numpy<2" \
