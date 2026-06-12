@@ -1,7 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
 
-from ament_index_python.packages import get_package_share_directory
+from ament_index_python.packages import get_package_prefix, get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -107,14 +107,37 @@ def launch_setup(context, *args, **kwargs):
         ],
         output='screen'
     )
+
+    dynamic_scan_filter = Node(
+        package='dynamic_scan_filter',
+        executable='dynamic_scan_filter_node',
+        name='dynamic_scan_filter',
+        output='screen',
+        parameters=[{
+            'input_scan_topic': '/scan',
+            'output_scan_topic': '/scan_filtered',
+            'tracking_frame': 'odom',
+        }],
+    )
     
-    return [gz_sim, robot_state_publisher, spawn_entity, bridge]
+    return [gz_sim, robot_state_publisher, spawn_entity, bridge, dynamic_scan_filter]
 
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('xgo_description')
+    pkg_prefix = get_package_prefix('xgo_description')
+    gz_sim_vendor_prefix = get_package_prefix('gz_sim_vendor')
     default_world = os.path.join(pkg_share, 'worlds', 'slam_test_world.sdf')
     # default_world = os.path.join(pkg_share, 'worlds', 'real_objects_world.sdf')
+    gz_system_plugins = os.path.join(
+        gz_sim_vendor_prefix,
+        'opt',
+        'gz_sim_vendor',
+        'lib',
+        'gz-sim-8',
+        'plugins',
+    )
+    custom_plugin_dir = os.path.join(pkg_prefix, 'lib')
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -130,6 +153,10 @@ def generate_launch_description():
         SetEnvironmentVariable(
             name='GZ_SIM_RESOURCE_PATH',
             value=[os.path.join(pkg_share, '..'), ':', os.path.join(pkg_share, 'meshes', 'models')],
+        ),
+        SetEnvironmentVariable(
+            name='GZ_SIM_SYSTEM_PLUGIN_PATH',
+            value=[custom_plugin_dir, ':', gz_system_plugins],
         ),
         OpaqueFunction(function=launch_setup),
     ])

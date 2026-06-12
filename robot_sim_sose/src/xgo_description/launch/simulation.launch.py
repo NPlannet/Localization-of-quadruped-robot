@@ -1,23 +1,29 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, TimerAction
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
-
-    config_dir = os.path.join(get_package_share_directory('xgo_description'), 'config')
+    pkg_share = get_package_share_directory('xgo_description')
+    config_dir = os.path.join(pkg_share, 'config')
+    default_world = os.path.join(pkg_share, 'worlds', 'slam_test_world.sdf')
 
     # 1. Gazebo + Robot
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             os.path.join(
-                get_package_share_directory('xgo_description'),
+                pkg_share,
                 'launch',
                 'gazebo_fast.launch.py'
             )
-        ])
+        ]),
+        launch_arguments={
+            'world': LaunchConfiguration('world'),
+            'gui': LaunchConfiguration('gui'),
+        }.items()
     )
 
     # 2. SLAM Toolbox – verzögert starten damit Gazebo zuerst hochfährt
@@ -61,6 +67,16 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'world',
+            default_value=default_world,
+            description='Absolute path to the Gazebo world SDF file.',
+        ),
+        DeclareLaunchArgument(
+            'gui',
+            default_value='true',
+            description='Start the Gazebo GUI. Set false for server-only simulation.',
+        ),
         gazebo,
         slam,
         nav2,

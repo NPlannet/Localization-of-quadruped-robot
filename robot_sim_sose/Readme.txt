@@ -84,11 +84,24 @@ Terminal 1: start Gazebo with the dynamic real-object world.
 ros2 launch xgo_description real_objects.launch.py
 ```
 
+Or, if you want SLAM/Nav2 plus the gliding movers in one launch, use:
+
+```bash
+ros2 launch xgo_description simulation.launch.py world:=/workspaces/robot_sim_sose/src/xgo_description/worlds/real_objects_world.sdf
+```
+
 Terminal 2: start slam-toolbox.
 
 ```bash
 ros2 launch slam_toolbox online_async_launch.py slam_params_file:=/workspaces/robot_sim_sose/src/xgo_description/config/slam_toolbox.yaml
 ```
+
+The Gazebo launches start `dynamic_scan_filter` automatically.
+- `/scan` remains the raw LiDAR topic for navigation and obstacle handling.
+- `slam_toolbox` now subscribes to `/scan_filtered` through `slam_toolbox.yaml`.
+- Cluster markers are published on `/dynamic_scan_filter/cluster_markers` and are included in the saved RViz config.
+- The moving chair and walking person are driven by a native Gazebo plugin in `real_objects_world.sdf`.
+- To add new movers, copy an existing `xgo_glide_trajectory_system` plugin block in the world file and adjust `offset` or `start` / `end`, `period`, and `phase_offset`.
 
 Terminal 3: open RViz with the saved SLAM layout.
 

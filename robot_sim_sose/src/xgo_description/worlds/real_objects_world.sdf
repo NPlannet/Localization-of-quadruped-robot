@@ -219,8 +219,29 @@
         </visual>
       </link>
     </model> -->
+    <!--
+      Native smooth mover plugin template:
 
-
+      <plugin
+        filename="xgo_glide_trajectory_system"
+        name="xgo_description::systems::GlideTrajectorySystem">
+        Optional: use model <pose> as the start point and move by an offset.
+        <offset>0 -2.0 0</offset>
+        Optional alternative: specify both endpoints explicitly.
+        <start>1.0 0.0 0.45</start>
+        <end>3.0 0.0 0.45</end>
+        Full there-and-back cycle duration in seconds.
+        <period>20.0</period>
+        Stagger multiple movers by shifting their time origin.
+        <phase_offset>5.0</phase_offset>
+        Rotate to face the direction of travel.
+        <align_yaw>true</align_yaw>
+        Or keep a fixed heading if align_yaw is false.
+        <fixed_yaw>1.5708</fixed_yaw>
+        Smoothing for heading changes.
+        <yaw_time_constant>0.35</yaw_time_constant>
+      </plugin>
+    -->
 
     <model name="moving_chair">
       <pose>1.2 -1.7 0.45 0 0 -1.5708</pose>
@@ -284,6 +305,15 @@
           <material><ambient>0.07 0.07 0.07 1</ambient><diffuse>0.07 0.07 0.07 1</diffuse></material>
         </visual>
       </link>
+      <plugin
+        filename="xgo_glide_trajectory_system"
+        name="xgo_description::systems::GlideTrajectorySystem">
+        <offset>0 -3.0 0</offset>
+        <period>36.0</period>
+        <phase_offset>0.0</phase_offset>
+        <align_yaw>true</align_yaw>
+        <yaw_time_constant>0.35</yaw_time_constant>
+      </plugin>
     </model>
 
 
@@ -365,6 +395,15 @@
           </material>
         </visual>
       </link>
+      <plugin
+        filename="xgo_glide_trajectory_system"
+        name="xgo_description::systems::GlideTrajectorySystem">
+        <offset>2.0 0 0</offset>
+        <period>27.0</period>
+        <phase_offset>3.0</phase_offset>
+        <align_yaw>true</align_yaw>
+        <yaw_time_constant>0.35</yaw_time_constant>
+      </plugin>
     </model>
 
 

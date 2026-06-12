@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>dynamic_scan_filter</name>
+  <version>0.0.0</version>
+  <description>LiDAR-based dynamic object filter for scan-driven mapping and localization.</description>
+  <maintainer email="ros@todo.todo">ros</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>visualization_msgs</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

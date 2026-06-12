@@ -8,6 +8,18 @@ endif()
 
 # Find the ROS 2 build tool
 find_package(ament_cmake REQUIRED)
+find_package(gz-sim8 REQUIRED)
+
+add_library(xgo_glide_trajectory_system SHARED
+  src/GlideTrajectorySystem.cc
+)
+target_link_libraries(xgo_glide_trajectory_system
+  PRIVATE gz-sim8::core
+)
+
+install(TARGETS xgo_glide_trajectory_system
+  LIBRARY DESTINATION lib
+)
 
 # Install directories to the 'share' folder so ROS 2 can find your meshes and URDF
 install(DIRECTORY 

@@ -7,6 +7,7 @@ Panels:
         - /Global Options1
         - /Map1
         - /LaserScan1
+        - /Cluster Markers1
         - /Odometry1
         - /TF1
       Splitter Ratio: 0.5
@@ -94,6 +95,18 @@ Visualization Manager:
         Value: /scan
       Use Fixed Frame: true
       Use rainbow: true
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: Cluster Markers
+      Namespaces:
+        {}
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /dynamic_scan_filter/cluster_markers
       Value: true
     - Class: rviz_default_plugins/Odometry
       Color: 32; 160; 255
