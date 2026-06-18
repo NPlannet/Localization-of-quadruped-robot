@@ -1,6 +1,6 @@
 import copy
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
 import rclpy
@@ -52,6 +52,7 @@ class Track:
     static_hits: int = 1
     missed_frames: int = 0
     static_since_sec: Optional[float] = None
+    centroid_history: List[Tuple[float, Tuple[float, float]]] = field(default_factory=list)
 
 
 class DynamicScanFilterNode(Node):
@@ -73,15 +74,35 @@ class DynamicScanFilterNode(Node):
             self.declare_parameter('max_trackable_cluster_span', 1.5).value
         )
         self.association_distance = float(self.declare_parameter('association_distance', 0.35).value)
-        self.motion_jitter_tolerance = float(self.declare_parameter('motion_jitter_tolerance', 0.01).value)
-        self.moving_speed_threshold = float(self.declare_parameter('moving_speed_threshold', 0.12).value)
+                #This subtracts a small allowed wobble before motion is measured. If a cluster shifts by less than this, the code treats it as zero movement.
+        self.motion_jitter_tolerance = float(self.declare_parameter('motion_jitter_tolerance', 0.02).value) 
+        # Time window for motion history. Clusters are saved for 1 seconds, then compared to the new one for speed calculation
+        self.motion_history_window_sec = float(self.declare_parameter('motion_history_window_sec', 1.0).value)
+        self.motion_history_min_age_sec = float(self.declare_parameter('motion_history_min_age_sec', 1.0).value)
+        self.range_adjustment_enabled = bool(self.declare_parameter('range_adjustment_enabled', True).value)
+        self.range_adjustment_reference_range = float(
+            self.declare_parameter('range_adjustment_reference_range', 1.0).value
+        )
+        self.range_adjustment_min_range = float(
+            self.declare_parameter('range_adjustment_min_range', 0.2).value
+        )
+        self.range_adjustment_min_scale = float(
+            self.declare_parameter('range_adjustment_min_scale', 0.7).value
+        )
+        self.range_adjustment_max_scale = float(
+            self.declare_parameter('range_adjustment_max_scale', 1.3).value
+        )
+        # Most important parameters
+        self.moving_speed_threshold = float(self.declare_parameter('moving_speed_threshold', 0.1).value)
         self.static_speed_threshold = float(self.declare_parameter('static_speed_threshold', 0.06).value)
-        self.moving_confirmations = int(self.declare_parameter('moving_confirmations', 3).value)
-        self.static_confirmations = int(self.declare_parameter('static_confirmations', 6).value)
-        self.static_release_delay_sec = float(self.declare_parameter('static_release_delay_sec', 4.0).value)
+        self.moving_confirmations = int(self.declare_parameter('moving_confirmations', 4).value)
+        self.static_confirmations = int(self.declare_parameter('static_confirmations', 20).value)
+        self.static_release_delay_sec = float(self.declare_parameter('static_release_delay_sec', 3.0).value)
         self.max_missed_frames = int(self.declare_parameter('max_missed_frames', 4).value)
-        self.filter_unconfirmed = bool(self.declare_parameter('filter_unconfirmed', False).value)
+        self.filter_unconfirmed = bool(self.declare_parameter('filter_unconfirmed', True).value)
         self.transform_timeout_sec = float(self.declare_parameter('transform_timeout_sec', 0.05).value)
+
+        # marker settings on map
         self.marker_lifetime = Duration(seconds=float(self.declare_parameter('marker_lifetime_sec', 0.5).value))
         self.cluster_line_width = float(self.declare_parameter('cluster_line_width', 0.03).value)
         self.centroid_marker_size = float(self.declare_parameter('centroid_marker_size', 0.10).value)
@@ -326,6 +347,7 @@ class DynamicScanFilterNode(Node):
                 centroid_tracking=observation.centroid_tracking,
                 last_timestamp_sec=timestamp_sec,
                 span=observation.span,
+                centroid_history=[(timestamp_sec, observation.centroid_tracking)],
             )
             observation.track_id = track_id
             observation.state = self.tracks[track_id].state
@@ -347,8 +369,16 @@ class DynamicScanFilterNode(Node):
         match_distance: float,
         timestamp_sec: float,
     ) -> None:
-        dt = max(timestamp_sec - track.last_timestamp_sec, 1e-3)
-        effective_distance = max(0.0, match_distance - self.motion_jitter_tolerance)
+        del match_distance
+
+        reference_timestamp_sec, reference_centroid = self.get_motion_reference(track, timestamp_sec)
+        dt = max(timestamp_sec - reference_timestamp_sec, 1e-3)
+        raw_distance = math.hypot(
+            observation.centroid_tracking[0] - reference_centroid[0],
+            observation.centroid_tracking[1] - reference_centroid[1],
+        )
+        adjusted_distance = self.adjust_motion_distance_for_range(raw_distance, observation.mean_range)
+        effective_distance = max(0.0, adjusted_distance - self.motion_jitter_tolerance)
         speed = effective_distance / dt
         was_moving = track.state == MOVING
         was_static = track.state == STATIC_TRUSTED
@@ -356,15 +386,19 @@ class DynamicScanFilterNode(Node):
         track.centroid_tracking = observation.centroid_tracking
         track.last_timestamp_sec = timestamp_sec
         track.span = observation.span
+        self.append_centroid_history(track, timestamp_sec, observation.centroid_tracking)
 
-        if speed >= self.moving_speed_threshold:
+        moving_candidate = speed >= self.moving_speed_threshold
+        static_candidate = speed <= self.static_speed_threshold
+
+        if moving_candidate:
             track.moving_hits += 1
             track.static_hits = 0
             track.static_since_sec = None
             track.state = MOVING if was_moving or track.moving_hits >= self.moving_confirmations else UNCERTAIN
             return
 
-        if speed <= self.static_speed_threshold:
+        if static_candidate:
             track.static_hits += 1
             track.moving_hits = 0
             if was_moving:
@@ -393,6 +427,56 @@ class DynamicScanFilterNode(Node):
             track.state = STATIC_TRUSTED
         else:
             track.state = UNCERTAIN
+
+    def adjust_motion_distance_for_range(self, raw_distance: float, mean_range: float) -> float:
+        if not self.range_adjustment_enabled:
+            return raw_distance
+
+        safe_range = max(mean_range, self.range_adjustment_min_range)
+        if not math.isfinite(safe_range) or safe_range <= 0.0:
+            return raw_distance
+
+        scale = self.range_adjustment_reference_range / safe_range
+        scale = min(max(scale, self.range_adjustment_min_scale), self.range_adjustment_max_scale)
+        return raw_distance * scale
+
+    def get_motion_reference(
+        self,
+        track: Track,
+        timestamp_sec: float,
+    ) -> Tuple[float, Tuple[float, float]]:
+        if not track.centroid_history:
+            return track.last_timestamp_sec, track.centroid_tracking
+
+        min_age_sec = min(self.motion_history_min_age_sec, self.motion_history_window_sec)
+        eligible_samples = [
+            sample for sample in track.centroid_history
+            if timestamp_sec - sample[0] >= min_age_sec
+        ]
+        if not eligible_samples:
+            return track.last_timestamp_sec, track.centroid_tracking
+
+        target_age_sec = self.motion_history_window_sec
+        return min(
+            eligible_samples,
+            key=lambda sample: abs((timestamp_sec - sample[0]) - target_age_sec),
+        )
+
+    def append_centroid_history(
+        self,
+        track: Track,
+        timestamp_sec: float,
+        centroid_tracking: Tuple[float, float],
+    ) -> None:
+        track.centroid_history.append((timestamp_sec, centroid_tracking))
+        keep_after_sec = timestamp_sec - max(
+            self.motion_history_window_sec + self.motion_history_min_age_sec,
+            self.motion_history_window_sec + 0.5,
+        )
+        track.centroid_history = [
+            sample for sample in track.centroid_history
+            if sample[0] >= keep_after_sec
+        ]
 
     def build_filtered_scan(
         self,

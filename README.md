@@ -28,7 +28,8 @@ docker compose up -d --build
 For an NVIDIA GPU-enabled setup, add the override file:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.nvidia.yml up -d --build
+docker compose -f docker-compose.yml up -d --build
+docker compose -f docker-compose.nvidia.yml up -d --build
 ```
 
 Open a shell inside the container:

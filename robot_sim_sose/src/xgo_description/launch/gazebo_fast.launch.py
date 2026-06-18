@@ -113,11 +113,6 @@ def launch_setup(context, *args, **kwargs):
         executable='dynamic_scan_filter_node',
         name='dynamic_scan_filter',
         output='screen',
-        parameters=[{
-            'input_scan_topic': '/scan',
-            'output_scan_topic': '/scan_filtered',
-            'tracking_frame': 'odom',
-        }],
     )
     
     return [gz_sim, robot_state_publisher, spawn_entity, bridge, dynamic_scan_filter]

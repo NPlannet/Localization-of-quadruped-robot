@@ -309,7 +309,7 @@
         filename="xgo_glide_trajectory_system"
         name="xgo_description::systems::GlideTrajectorySystem">
         <offset>0 -3.0 0</offset>
-        <period>36.0</period>
+        <period>21.2</period>
         <phase_offset>0.0</phase_offset>
         <align_yaw>true</align_yaw>
         <yaw_time_constant>0.35</yaw_time_constant>
@@ -399,7 +399,7 @@
         filename="xgo_glide_trajectory_system"
         name="xgo_description::systems::GlideTrajectorySystem">
         <offset>2.0 0 0</offset>
-        <period>27.0</period>
+        <period>15.9</period>
         <phase_offset>3.0</phase_offset>
         <align_yaw>true</align_yaw>
         <yaw_time_constant>0.35</yaw_time_constant>

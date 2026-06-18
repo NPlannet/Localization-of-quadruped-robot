@@ -364,12 +364,17 @@
       <pose>0 0 0 0 0 0</pose>
       <topic>scan</topic>
       <gz_frame_id>lidar_link</gz_frame_id>
+      <!-- the provided Mini2SW radar data:
+           360 deg ToF, 0.05m-12m, 4000Hz, 6Hz-12Hz, 0.54 deg resolution.
+           6 Hz * 667 samples ~= 4000 points/s and ~0.54 deg angular spacing.
+           changed to 10 HZ * 400 samples for more frequent updates -->
+           
       <update_rate>10</update_rate>
       
       <ray>
         <scan>
           <horizontal>
-            <samples>360</samples>
+            <samples>400</samples>
             <resolution>1</resolution>
             <min_angle>-3.14159</min_angle>
             <max_angle>3.14159</max_angle>
@@ -384,9 +389,9 @@
         </scan>
 
         <range>
-          <min>0.02</min>
+          <min>0.05</min>
           <max>12.0</max>
-          <resolution>0.045</resolution>
+          <resolution>0.0025</resolution>
         </range>
       </ray>
 
