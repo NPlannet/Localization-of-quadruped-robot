@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>xgo_driver_bridge</name>
+  <version>0.0.1</version>
+  <description>ROS 2 bridge for the XGO Mini2 Python SDK.</description>
+  <maintainer email="ros@todo.todo">ros</maintainer>
+  <license>MIT</license>
+
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2_ros</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

@@ -1,4 +1,17 @@
 Welcome to our semester project, the localization of a quadruped robot.
+
+## Running On The Real XGO Mini2
+
+For the physical robot, use the robot container deployment instead of the Gazebo simulation launch files:
+
+```bash
+cd robot_sim_sose
+docker compose -f docker-compose.robot.yml build
+docker compose -f docker-compose.robot.yml up -d
+```
+
+Then follow the full checklist in [`robot_sim_sose/ROBOT_DEPLOYMENT.md`](robot_sim_sose/ROBOT_DEPLOYMENT.md).
+
 ## 1. Install Docker
 
 Install Docker before building the project.

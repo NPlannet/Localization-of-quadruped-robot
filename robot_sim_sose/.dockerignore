@@ -1,0 +1,11 @@
+build/
+install/
+log/
+__pycache__/
+**/__pycache__/
+*.pyc
+maps/
+detections/
+.git/
+.codex/
+.agents/

@@ -1,0 +1,23 @@
+services:
+  xgo-robot:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile.robot
+      args:
+        INSTALL_YOLO: ${INSTALL_YOLO:-false}
+    image: xgo-mini2-ros-jazzy:robot
+    container_name: xgo_mini2_robot
+    network_mode: host
+    ipc: host
+    privileged: true
+    environment:
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-42}
+      RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
+      YOLO_DEVICE: ${YOLO_DEVICE:-cpu}
+      SHELL: /bin/bash
+    volumes:
+      - .:/workspaces/robot_sim_sose
+      - /dev:/dev
+      - /run/udev:/run/udev:ro
+    working_dir: /workspaces/robot_sim_sose
+    command: sleep infinity
