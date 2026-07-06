@@ -3,8 +3,6 @@ services:
     build:
       context: .
       dockerfile: .devcontainer/Dockerfile
-      args:
-        TORCH_WHL_INDEX_URL: ${TORCH_WHL_INDEX_URL:-}
     container_name: gazebo_jazzy
     network_mode: host
     ipc: host
@@ -12,9 +10,9 @@ services:
     environment:
       DISPLAY: ${DISPLAY}
       QT_X11_NO_MITSHM: "1"
+      FASTDDS_BUILTIN_TRANSPORTS: UDPv4
       ROS_DOMAIN_ID: "42"
       SHELL: /bin/bash
-      YOLO_DEVICE: ${YOLO_DEVICE:-auto}
     volumes:
       - .:/workspaces/robot_sim_sose:cached
       - /tmp/.X11-unix:/tmp/.X11-unix:cached

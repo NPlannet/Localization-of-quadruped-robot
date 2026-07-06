@@ -32,18 +32,25 @@ echo "Remote directory: ${REMOTE_DIR}"
 
 ssh "${TARGET}" "mkdir -p ${REMOTE_DIR}"
 
+RSYNC_PATHS=(
+  ./.dockerignore
+  ./docker-compose.robot.yml
+  ./explore.py
+  ./ROBOT_DEPLOYMENT.md
+  ./.devcontainer/Dockerfile.robot
+  ./scripts/
+  ./src/xgo_driver_bridge/
+  ./src/dynamic_scan_filter/
+  ./src/nav2_wavefront_frontier_exploration/
+  ./src/xgo_description/config/
+)
+
+if [ -d ./src/ldlidar_stl_ros2 ]; then
+  RSYNC_PATHS+=(./src/ldlidar_stl_ros2/)
+fi
+
 rsync -av --relative \
-  ./.dockerignore \
-  ./docker-compose.robot.yml \
-  ./explore.py \
-  ./ROBOT_DEPLOYMENT.md \
-  ./.devcontainer/Dockerfile.robot \
-  ./scripts/ \
-  ./src/xgo_driver_bridge/ \
-  ./src/dynamic_scan_filter/ \
-  ./src/nav2_wavefront_frontier_exploration/ \
-  ./src/yolo_detector/ \
-  ./src/xgo_description/config/ \
+  "${RSYNC_PATHS[@]}" \
   "${TARGET}:${REMOTE_DIR}/"
 
 cat <<EOF

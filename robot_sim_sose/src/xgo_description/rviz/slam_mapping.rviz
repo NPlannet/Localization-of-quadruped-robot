@@ -98,8 +98,8 @@ Visualization Manager:
         Durability Policy: Volatile
         Filter size: 10
         History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /scan:filtered
+        Reliability Policy: Best Effort
+        Value: /scan_filtered
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -273,7 +273,7 @@ Visualization Manager:
 Window Geometry:
   Displays:
     collapsed: true
-  Height: 987
+  Height: 494
   Hide Left Dock: true
   Hide Right Dock: false
   QMainWindow State: 000000ff00000000fd00000001000000000000019b00000231fc0200000004fb000000100044006900730070006c006100790073000000003b000000c7000000c700fffffffb0000001200530065006c0065006300740069006f006e00000001080000005c0000005c00fffffffb0000001e0054006f006f006c002000500072006f0070006500720074006900650073000000016a0000005c0000005c00fffffffb0000000a0056006900650077007300000001cc000000a0000000a000ffffff000007740000038500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
@@ -283,6 +283,6 @@ Window Geometry:
     collapsed: true
   Views:
     collapsed: true
-  Width: 1908
+  Width: 954
   X: 0
   Y: 0

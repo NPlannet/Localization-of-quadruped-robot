@@ -3,7 +3,6 @@ USER root
 ARG USERNAME=ros
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
-ARG TORCH_WHL_INDEX_URL
 
 RUN if id -u $USER_UID >/dev/null 2>&1; then \
         EXISTING_USER=$(getent passwd $USER_UID | cut -d: -f1); \
@@ -23,29 +22,23 @@ RUN if id -u $USER_UID >/dev/null 2>&1; then \
         ros-$ROS_DISTRO-tf-transformations \
         ros-$ROS_DISTRO-navigation2 \
         ros-$ROS_DISTRO-nav2-bringup \
+        ros-$ROS_DISTRO-rosbag2-storage-mcap \
     && rm -rf /var/lib/apt/lists/*\
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
-
-# Python packages for YOLO. By default this installs a CPU-compatible PyTorch.
-# NVIDIA users can override TORCH_WHL_INDEX_URL during build to pull CUDA wheels.
-RUN if [ -n "$TORCH_WHL_INDEX_URL" ]; then \
-        pip install --break-system-packages \
-            torch torchvision \
-            --index-url "$TORCH_WHL_INDEX_URL"; \
-    else \
-        pip install --break-system-packages \
-            torch torchvision; \
-    fi \
-    && pip install --break-system-packages \
-        ultralytics \
-        "numpy<2" \
-    && pip uninstall opencv-python -y || true
 
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "cd /workspaces/robot_sim_sose 2>/dev/null || true" >> /home/$USERNAME/.bashrc \
     && echo "[ -f install/setup.bash ] && source install/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "cbs() { colcon build --symlink-install && source install/setup.bash; }" >> /home/$USERNAME/.bashrc \
     && chown $USERNAME:$USERNAME /home/$USERNAME/.bashrc
+
+RUN apt-get update \
+    && if apt-cache show "ros-$ROS_DISTRO-cartographer-ros" >/dev/null 2>&1; then \
+        apt-get install -y --no-install-recommends "ros-$ROS_DISTRO-cartographer-ros"; \
+    else \
+        echo "WARNING: optional package ros-$ROS_DISTRO-cartographer-ros is not available for $ROS_DISTRO."; \
+    fi \
+    && rm -rf /var/lib/apt/lists/*
 
 USER $USERNAME

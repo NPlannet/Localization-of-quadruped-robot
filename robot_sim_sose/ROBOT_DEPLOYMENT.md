@@ -1,4 +1,10 @@
 # XGO Mini2 Robot Deployment
+Connect to the robot via the right WIFI connection and ssh pi@robodogeX.local where X is the right number. Passwords are listed in the private WhatsApp Group.
+
+
+
+
+
 
 This deployment path runs the mapping and exploration stack inside a small ROS 2 container on the real robot. Do not use the Gazebo simulation launch files on the robot.
 
@@ -51,7 +57,13 @@ This wraps:
 ros2 launch ldlidar_stl_ros2 ld19.launch.py serial_port:=/dev/ttyUSB0
 ```
 
-If the driver is missing from the container, rebuild after syncing the latest Dockerfile. The Dockerfile tries to install `ros-jazzy-ldlidar-stl-ros2` when it is available from the ROS package repositories. If that package is not available for your base image, use the  repository of Maher annd place/build its `ldlidar_stl_ros2` package in the workspace. (MIGHT BE A TO DO )
+The Dockerfile tries to install `ros-jazzy-ldlidar-stl-ros2` when it is available from the ROS package repositories. If that package is not available for your base image, add the `ldlidar_stl_ros2` package to `src/ldlidar_stl_ros2` in this workspace and rerun:
+
+```bash
+bash scripts/robot_build_workspace.sh
+```
+
+That script now checks that `ldlidar_stl_ros2` is available either from apt or from the workspace before you continue with the robot stack.
 
 The camera can be started with:
 

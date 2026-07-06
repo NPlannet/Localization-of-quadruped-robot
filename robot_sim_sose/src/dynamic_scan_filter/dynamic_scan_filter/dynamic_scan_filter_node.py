@@ -7,7 +7,7 @@ import rclpy
 from geometry_msgs.msg import Point
 from rclpy.duration import Duration
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy, qos_profile_sensor_data
 from rclpy.time import Time
 from sensor_msgs.msg import LaserScan
 from tf2_ros import Buffer, TransformException, TransformListener
@@ -61,6 +61,7 @@ class DynamicScanFilterNode(Node):
 
         self.input_scan_topic = self.declare_parameter('input_scan_topic', '/scan').value
         self.output_scan_topic = self.declare_parameter('output_scan_topic', '/scan_filtered').value
+        self.output_reliability = self.declare_parameter('output_reliability', 'reliable').value
         self.marker_topic = self.declare_parameter(
             'marker_topic',
             '/dynamic_scan_filter/cluster_markers',
@@ -118,10 +119,11 @@ class DynamicScanFilterNode(Node):
             self.scan_callback,
             qos_profile_sensor_data,
         )
+        output_scan_qos = self.create_output_scan_qos()
         self.scan_pub = self.create_publisher(
             LaserScan,
             self.output_scan_topic,
-            qos_profile_sensor_data,
+            output_scan_qos,
         )
         self.marker_pub = self.create_publisher(MarkerArray, self.marker_topic, 10)
 
@@ -134,6 +136,27 @@ class DynamicScanFilterNode(Node):
             'Dynamic scan filter started: '
             f'{self.input_scan_topic} -> {self.output_scan_topic}, tracking in {self.tracking_frame}, '
             f'markers on {self.marker_topic}.'
+        )
+
+    def create_output_scan_qos(self) -> QoSProfile:
+        reliability_name = str(self.output_reliability).strip().lower()
+        if reliability_name == 'best_effort':
+            reliability = QoSReliabilityPolicy.BEST_EFFORT
+        else:
+            if reliability_name not in {'reliable', 'system_default'}:
+                self.get_logger().warning(
+                    f"Unknown output_reliability '{self.output_reliability}', using reliable."
+                )
+            reliability = (
+                QoSReliabilityPolicy.SYSTEM_DEFAULT
+                if reliability_name == 'system_default'
+                else QoSReliabilityPolicy.RELIABLE
+            )
+
+        return QoSProfile(
+            history=QoSHistoryPolicy.KEEP_LAST,
+            depth=10,
+            reliability=reliability,
         )
 
     def scan_callback(self, msg: LaserScan) -> None:

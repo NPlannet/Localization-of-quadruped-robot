@@ -90,17 +90,37 @@ The Gazebo-based launches now start a `dynamic_scan_filter` node automatically.
 - When you launch `real_objects_world.sdf`, the slow gliding movers run through a native Gazebo plugin inside the simulation loop.
 - To add another mover, copy one of the existing `<plugin filename="xgo_glide_trajectory_system" ...>` blocks in `real_objects_world.sdf` and change `offset` or `start` / `end`, `period`, and `phase_offset`.
 
+## 5b. Replay Real Robot Bags Without Gazebo
 
-# 6. run YOLO-detector and exploration: 
+If you recorded data from the real robot into `robot_sim_sose/bag/...`, you can replay that data directly into the localization stack without starting Gazebo.
+
+Build the needed workspace packages inside the dev container:
+
 ```bash
-ros2 run yolo_detector detector_node
-python3 explore.py
+source /opt/ros/jazzy/setup.bash
+colcon build --symlink-install --packages-select xgo_description dynamic_scan_filter
+source install/setup.bash
 ```
 
-The detector reads the `YOLO_DEVICE` environment variable.
-- Default: `auto` -> uses CUDA when available, otherwise CPU
-- AMD / non-CUDA systems: keep the default or set `YOLO_DEVICE=cpu`
-- NVIDIA systems: use `docker-compose.nvidia.yml`, which sets `YOLO_DEVICE=cuda`
+Then launch bag replay with SLAM and RViz:
+
+```bash
+ros2 launch xgo_description bag_replay.launch.py \
+  bag_path:=/workspaces/robot_sim_sose/bag/bag/round_001
+```
+
+Notes:
+- Use any bag directory that contains a `metadata.yaml`, for example `round_002` or `straightline1`.
+- This workflow uses `/scan`, `/odom`, `/tf`, and `/tf_static` from the bag and regenerates `/scan_filtered` with `dynamic_scan_filter`.
+- RViz is the recommended visualizer for offline bag playback because it already has the SLAM view and navigation tools configured.
+- Lichtblick is still useful for inspecting topic timelines and message contents, but it is optional for this offline workflow.
+- `use_nav2:=true` can be added if you want to inspect costmaps and planning, but replayed bags are not interactive robot control.
+
+
+# 6. run exploration: 
+```bash
+python3 explore.py
+```
 
 
 # 7. Visuals (RVIZ, and camera image)
