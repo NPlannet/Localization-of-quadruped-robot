@@ -8,9 +8,17 @@ NAV2_PARAMS=${NAV2_PARAMS:-${WORKSPACE}/src/xgo_description/config/nav2_params.y
 LIDAR_SERIAL_PORT=${LIDAR_SERIAL_PORT:-/dev/ttyUSB0}
 FOXGLOVE_PORT=${FOXGLOVE_PORT:-8766}
 
-source "/opt/ros/${ROS_DISTRO}/setup.bash"
+source_setup() {
+  set +u
+  # ROS setup scripts reference unset helper vars internally.
+  # Temporarily relaxing nounset keeps this script strict while remaining compatible.
+  source "$1"
+  set -u
+}
+
+source_setup "/opt/ros/${ROS_DISTRO}/setup.bash"
 if [ -f "${WORKSPACE}/install/setup.bash" ]; then
-  source "${WORKSPACE}/install/setup.bash"
+  source_setup "${WORKSPACE}/install/setup.bash"
 fi
 
 usage() {

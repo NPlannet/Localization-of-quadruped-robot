@@ -5,7 +5,15 @@ WORKSPACE=${WORKSPACE:-/workspaces/robot_sim_sose}
 ROS_DISTRO=${ROS_DISTRO:-jazzy}
 REQUIRE_LIDAR_DRIVER=${REQUIRE_LIDAR_DRIVER:-true}
 
-source "/opt/ros/${ROS_DISTRO}/setup.bash"
+source_setup() {
+  set +u
+  # ROS setup scripts reference unset helper vars internally.
+  # Temporarily relaxing nounset keeps our wrapper strict while remaining compatible.
+  source "$1"
+  set -u
+}
+
+source_setup "/opt/ros/${ROS_DISTRO}/setup.bash"
 cd "${WORKSPACE}"
 
 PACKAGES=(
@@ -21,7 +29,7 @@ fi
 colcon build --symlink-install --packages-select "${PACKAGES[@]}"
 
 if [ -f "${WORKSPACE}/install/setup.bash" ]; then
-  source "${WORKSPACE}/install/setup.bash"
+  source_setup "${WORKSPACE}/install/setup.bash"
 fi
 
 if ros2 pkg prefix ldlidar_stl_ros2 >/dev/null 2>&1; then

@@ -5,13 +5,18 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 ARG INSTALL_XGO_SDK=true
 ARG REQUIRE_LIDAR_DRIVER=true
+ARG LIBCAMERA_RPI_TAG=v0.7.1+rpt20260429
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=jazzy
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
+ENV AMENT_PREFIX_PATH=/opt/ros/jazzy
+ENV PYTHONUNBUFFERED=1
 
 USER root
+
+RUN echo 'APT::Sandbox::User "root";' > /etc/apt/apt.conf.d/00no-sandbox
 
 RUN if id -u ${USERNAME} >/dev/null 2>&1; then \
         usermod -u ${USER_UID} ${USERNAME}; \
@@ -30,18 +35,34 @@ RUN if id -u ${USERNAME} >/dev/null 2>&1; then \
     && apt-get install -y --no-install-recommends \
         bash-completion \
         build-essential \
+        cmake \
         curl \
         git \
-        gnupg2 \
         iproute2 \
+        libdrm-dev \
+        libgnutls28-dev \
+        libjsoncpp-dev \
+        libssl-dev \
+        libudev-dev \
+        libyaml-dev \
         locales \
+        meson \
+        ninja-build \
+        pkg-config \
         python3-colcon-common-extensions \
+        python3-jinja2 \
         python3-numpy \
         python3-pil \
         python3-pip \
+        python3-ply \
+        python3-vcstool \
+        python3-yaml \
         sudo \
+        udev \
+        usbutils \
         v4l-utils \
         vim-tiny \
+        ros-${ROS_DISTRO}-camera-ros \
         ros-${ROS_DISTRO}-foxglove-bridge \
         ros-${ROS_DISTRO}-nav2-map-server \
         ros-${ROS_DISTRO}-nav2-bringup \
@@ -57,28 +78,30 @@ RUN if id -u ${USERNAME} >/dev/null 2>&1; then \
     && echo "${USERNAME} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
-RUN curl -fsSL https://archive.raspberrypi.org/debian/raspberrypi.gpg \
-        | gpg --dearmor -o /usr/share/keyrings/raspberrypi-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/raspberrypi-archive-keyring.gpg] http://archive.raspberrypi.org/debian/ bookworm main" \
-        > /etc/apt/sources.list.d/raspi.list \
-    && printf "Package: *\nPin: origin archive.raspberrypi.org\nPin-Priority: 1001\n" \
-        > /etc/apt/preferences.d/rpi-pin
+# Build a single Raspberry Pi-flavored libcamera stack in /opt/ros/jazzy so
+# camera_ros, libcamera helpers, and ROS runtime all use the same binaries.
+RUN git clone --depth 1 --branch "${LIBCAMERA_RPI_TAG}" \
+        https://github.com/raspberrypi/libcamera.git /tmp/libcamera \
+    && cd /tmp/libcamera \
+    && meson setup build \
+        --prefix=/opt/ros/${ROS_DISTRO} \
+        --libdir=lib \
+        --buildtype=release \
+        -Dpipelines=rpi/vc4 \
+        -Dipas=rpi/vc4 \
+        -Dgstreamer=disabled \
+        -Dtest=false \
+        -Ddocumentation=disabled \
+        -Dcam=disabled \
+        -Dlc-compliance=disabled \
+        -Dqcam=disabled \
+        -Dtracing=disabled \
+        -Dpycamera=disabled \
+    && meson install -C build \
+    && ldconfig \
+    && rm -rf /tmp/libcamera
 
 RUN apt-get update \
-    && for pkg in \
-        libcamera-apps \
-        libcamera-dev; do \
-        if apt-cache show "${pkg}" >/dev/null 2>&1; then \
-            apt-get install -y --no-install-recommends "${pkg}"; \
-        else \
-            echo "WARNING: optional package ${pkg} is not available from apt for this base image."; \
-        fi; \
-    done \
-    && if apt-cache show "ros-${ROS_DISTRO}-camera-ros" >/dev/null 2>&1; then \
-        apt-get install -y --no-install-recommends "ros-${ROS_DISTRO}-camera-ros"; \
-    else \
-        echo "WARNING: optional package ros-${ROS_DISTRO}-camera-ros is not available from apt for ${ROS_DISTRO}."; \
-    fi \
     && if apt-cache show "ros-${ROS_DISTRO}-ldlidar-stl-ros2" >/dev/null 2>&1; then \
         apt-get install -y --no-install-recommends "ros-${ROS_DISTRO}-ldlidar-stl-ros2"; \
     else \

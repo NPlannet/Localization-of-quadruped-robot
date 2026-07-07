@@ -1,6 +1,8 @@
 # XGO Mini2 Robot Deployment
 Connect to the robot via the right WIFI connection and ssh pi@robodogeX.local where X is the right number. Passwords are listed in the private WhatsApp Group.
 
+pw robo2 = sughie6Eerasha7i
+## 2. Start The Robot Container
 
 ## 2. Start The Robot Container
 
@@ -15,10 +17,19 @@ From the synced repo root on the robot:
 ```bash
 cd ~/robot_sim_sose
 export ROS_DOMAIN_ID=42
-docker compose -f docker-compose.robot.yml build
-docker compose -f docker-compose.robot.yml up -d
-docker compose -f docker-compose.robot.yml exec xgo-robot bash
-``
+sudo docker compose -f docker-compose.robot.yml build --no-cache
+sudo docker compose -f docker-compose.robot.yml up -d
+sudo docker compose -f docker-compose.robot.yml exec xgo-robot bash
+```
+
+
+
+Launch the full stack into real terminal windows:
+
+bash scripts/robot_nav_tmux.sh pi@robodoge2.local --skip-build
+
+Each terminal logs into the robot, enters the Docker container, starts its role, and stays usable after you stop that role with `Ctrl+C`.
+
 
 Inside the container:
 
