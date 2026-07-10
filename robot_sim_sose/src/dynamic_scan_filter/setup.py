@@ -16,6 +16,7 @@ setup(
     entry_points={
         'console_scripts': [
             'dynamic_scan_filter_node = dynamic_scan_filter.dynamic_scan_filter_node:main',
+            'map_patch_node = dynamic_scan_filter.map_patch_node:main',
         ],
     },
 )
