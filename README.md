@@ -65,7 +65,12 @@ source install/setup.bash
 
 (not necessary in WSL2)
 ```bash
-export DISPLAY=host.docker.internal:0.0
+to Connect to an X server running on your Local machine:
+
+export DISPLAY=:1
+to Connect to an X server running on another machine:
+
+export DISPLAY=host.docker.internal:0.0  
 ```
 start XLaunch with
 - multiple windows
