@@ -21,6 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'xgo_bridge_node = xgo_driver_bridge.xgo_bridge_node:main',
+            'xgo_offline_odom_node = xgo_driver_bridge.offline_odom_node:main',
+            'waypoint_accuracy_node = xgo_driver_bridge.waypoint_accuracy_node:main',
         ],
     },
 )

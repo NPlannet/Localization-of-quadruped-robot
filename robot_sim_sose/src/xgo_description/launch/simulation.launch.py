@@ -33,13 +33,13 @@ def generate_launch_description():
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([
                     os.path.join(
-                        get_package_share_directory('slam_toolbox'),
+                        pkg_share,
                         'launch',
-                        'online_async_launch.py'
+                        'slam_toolbox_lifelong.launch.py'
                     )
                 ]),
                 launch_arguments={
-                    'slam_params_file': os.path.join(config_dir, 'slam_toolbox.yaml'),
+                    'slam_params_file': os.path.join(config_dir, 'slam_toolbox_lifelong.yaml'),
                     'use_sim_time': 'true'
                 }.items()
             )

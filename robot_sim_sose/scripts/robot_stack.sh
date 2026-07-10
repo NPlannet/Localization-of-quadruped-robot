@@ -3,7 +3,7 @@ set -euo pipefail
 
 WORKSPACE=${WORKSPACE:-/workspaces/robot_sim_sose}
 ROS_DISTRO=${ROS_DISTRO:-jazzy}
-SLAM_PARAMS=${SLAM_PARAMS:-${WORKSPACE}/src/xgo_description/config/slam_toolbox_robot.yaml}
+SLAM_PARAMS=${SLAM_PARAMS:-${WORKSPACE}/src/xgo_description/config/slam_toolbox_lifelong.yaml}
 NAV2_PARAMS=${NAV2_PARAMS:-${WORKSPACE}/src/xgo_description/config/nav2_params.yaml}
 LIDAR_SERIAL_PORT=${LIDAR_SERIAL_PORT:-/dev/ttyUSB0}
 FOXGLOVE_PORT=${FOXGLOVE_PORT:-8766}
@@ -95,7 +95,7 @@ EOF
     ros2 run dynamic_scan_filter dynamic_scan_filter_node
     ;;
   slam)
-    ros2 launch slam_toolbox online_async_launch.py \
+    ros2 launch xgo_driver_bridge slam_toolbox_lifelong.launch.py \
       slam_params_file:="${SLAM_PARAMS}" \
       use_sim_time:=false
     ;;
