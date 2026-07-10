@@ -65,9 +65,9 @@ source install/setup.bash
 
 (not necessary in WSL2)
 ```bash
-to Connect to an X server running on your Local machine:
+to Connect to an X server running on your local machine:
 
-export DISPLAY=:1
+export DISPLAY=:1 or export DISPLAY=:0 # if your local machine display server has the number 0.
 to Connect to an X server running on another machine:
 
 export DISPLAY=host.docker.internal:0.0  
