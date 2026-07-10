@@ -8,6 +8,7 @@ from cv_bridge import CvBridge
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import OccupancyGrid, Odometry
 import os
+import threading
 
 from sensor_msgs.msg import LaserScan, Imu, Image
 from PIL import Image as PILImage
@@ -42,7 +43,64 @@ class RobotController(Node):
         self.bridge = CvBridge()
         self.explore_timer = self.create_timer(5.0, self.explore_step)
         self.iteration = 0
+
+        # Steuerung: Pause + manuelles Ziel
+        self.paused = False
+        self.manual_goal_pending = None  # (x, y) wenn per 'goto' gesetzt, aber noch nicht losgeschickt
+        self.manual_goal_active = False  # True solange ein manuelles Ziel angefahren wird
+
+        # Tastatur-Eingaben in eigenem Thread, damit der ROS-Executor nicht blockiert
+        self.input_thread = threading.Thread(target=self.input_loop, daemon=True)
+        self.input_thread.start()
+        self.get_logger().info(
+            "Steuerung bereit. Befehle: 'goto x y', 'pause', 'resume', 'status'"
+        )
         
+    def input_loop(self):
+        """Läuft in eigenem Thread, liest Kommandos von der Tastatur."""
+        while rclpy.ok():
+            try:
+                line = input().strip()
+            except EOFError:
+                break
+            if not line:
+                continue
+
+            parts = line.split()
+            cmd = parts[0].lower()
+
+            if cmd == 'goto' and len(parts) == 3:
+                try:
+                    x = float(parts[1])
+                    y = float(parts[2])
+                except ValueError:
+                    self.get_logger().warn("Ungültige Koordinaten. Beispiel: goto 1.5 2.0")
+                    continue
+                self.manual_goal_pending = (x, y)
+                self.get_logger().info(f"Manuelles Ziel gesetzt: ({x:.2f}, {y:.2f})")
+
+            elif cmd == 'pause':
+                self.paused = True
+                if not self.navigator.isTaskComplete():
+                    self.navigator.cancelTask()
+                self.get_logger().info("Exploration pausiert.")
+
+            elif cmd == 'resume':
+                self.paused = False
+                self.get_logger().info("Exploration fortgesetzt.")
+
+            elif cmd == 'status':
+                mode = "PAUSED" if self.paused else "RUNNING"
+                target = " (manuelles Ziel aktiv)" if self.manual_goal_active else ""
+                self.get_logger().info(
+                    f"Status: {mode}{target} | Position: ({self.current_x:.2f}, {self.current_y:.2f})"
+                )
+
+            else:
+                self.get_logger().warn(
+                    f"Unbekannter Befehl: '{line}'. Verfügbar: goto x y, pause, resume, status"
+                )
+
     def odom_callback(self, msg):
         q = msg.pose.pose.orientation
         _, _, yaw = tf_transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
@@ -96,11 +154,29 @@ class RobotController(Node):
         if self.map_data is None:
             return
         self.save_map_image()
-        
+
+        # Manuelles Ziel hat Vorrang: wird sofort losgeschickt, auch wenn pausiert
+        if self.manual_goal_pending is not None:
+            x, y = self.manual_goal_pending
+            self.manual_goal_pending = None
+            self.manual_goal_active = True
+            self.get_logger().info(f"Navigiere zu manuellem Ziel: ({x:.2f}, {y:.2f})")
+            self.navigate_to(x, y)
+            return
+
+        if self.paused:
+            self.get_logger().info("Pausiert - warte auf 'resume'.")
+            return
+
         if not self.navigator.isTaskComplete():
             self.get_logger().info("Still navigating")
             return
-        
+
+        # Falls ein manuelles Ziel gerade fertig geworden ist, zurück in den Auto-Modus
+        if self.manual_goal_active:
+            self.manual_goal_active = False
+            self.get_logger().info("Manuelles Ziel erreicht. Exploration läuft weiter.")
+
         discover  = self.discover_next()
         if discover is None:
             self.get_logger().info("Nothing to discover found.")

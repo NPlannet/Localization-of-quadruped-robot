@@ -21,6 +21,7 @@ install(TARGETS xgo_glide_trajectory_system
   LIBRARY DESTINATION lib
 )
 
+
 # Install directories to the 'share' folder so ROS 2 can find your meshes and URDF
 install(DIRECTORY 
     config 

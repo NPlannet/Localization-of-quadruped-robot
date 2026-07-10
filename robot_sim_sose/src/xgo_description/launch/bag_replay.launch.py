@@ -13,19 +13,23 @@ def generate_launch_description():
     pkg_share = get_package_share_directory('xgo_description')
     config_dir = os.path.join(pkg_share, 'config')
     rviz_config = os.path.join(pkg_share, 'rviz', 'slam_mapping.rviz')
-    workspace = os.environ.get('WORKSPACE', '/workspaces/robot_sim_sose')
-    default_bag_path = os.path.join(workspace, 'bag', 'bag', 'round_001')
+    workspace = os.environ.get(
+        'WORKSPACE',
+        os.path.abspath(os.path.join(pkg_share, '..', '..', '..', '..')),
+    )
+    default_bag_path = os.path.join(workspace, 'w1 (1)', 'w1_nogt')
+    default_waypoints_path = os.path.join(workspace, 'w1 (1)', 'w1_nogt_waypoints.json')
+    default_eval_output = os.path.join(workspace, 'metrics', 'w1_slam_toolbox_waypoint_eval.json')
     default_qos_overrides = os.path.join(config_dir, 'bag_play_qos_overrides.yaml')
-    default_slam_params_filtered = os.path.join(config_dir, 'slam_toolbox_robot.yaml')
-    default_slam_params_raw = os.path.join(config_dir, 'slam_toolbox_robot_raw.yaml')
-    default_dynamic_filter_params = os.path.join(config_dir, 'dynamic_scan_filter_bag_replay.yaml')
+    default_slam_params_filtered = os.path.join(config_dir, 'slam_toolbox_lifelong.yaml')
+    default_slam_params_raw = os.path.join(config_dir, 'slam_toolbox_lifelong_raw.yaml')
 
     slam_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             os.path.join(
-                get_package_share_directory('slam_toolbox'),
+                pkg_share,
                 'launch',
-                'online_async_launch.py',
+                'slam_toolbox_lifelong.launch.py',
             )
         ]),
         launch_arguments={
@@ -60,6 +64,16 @@ def generate_launch_description():
             description='Playback rate passed to ros2 bag play.',
         ),
         DeclareLaunchArgument(
+            'waypoints_file',
+            default_value=default_waypoints_path,
+            description='Ground-truth waypoint sidecar JSON aligned with the bag timestamps.',
+        ),
+        DeclareLaunchArgument(
+            'evaluation_output_path',
+            default_value=default_eval_output,
+            description='Output JSON path for waypoint localization metrics.',
+        ),
+        DeclareLaunchArgument(
             'qos_overrides_path',
             default_value=default_qos_overrides,
             description='QoS override YAML passed to ros2 bag play.',
@@ -83,6 +97,26 @@ def generate_launch_description():
             'use_dynamic_filter',
             default_value='true',
             description='Filter dynamic LiDAR returns before feeding scans into SLAM Toolbox.',
+        ),
+        DeclareLaunchArgument(
+            'use_offline_odom',
+            default_value='true',
+            description='Synthesize /odom and odom->base_link TF from replayed velocity and IMU topics.',
+        ),
+        DeclareLaunchArgument(
+            'offline_twist_topic',
+            default_value='/xgo/applied_vel',
+            description='TwistStamped topic used to synthesize odometry during bag replay.',
+        ),
+        DeclareLaunchArgument(
+            'offline_imu_topic',
+            default_value='/imu/data',
+            description='IMU topic used to recover heading during bag replay.',
+        ),
+        DeclareLaunchArgument(
+            'use_waypoint_evaluator',
+            default_value='true',
+            description='Evaluate map-frame localization accuracy against the waypoint sidecar.',
         ),
         DeclareLaunchArgument(
             'republish_camera',
@@ -130,6 +164,34 @@ def generate_launch_description():
                 {'use_sim_time': True},
             ],
             condition=IfCondition(LaunchConfiguration('use_dynamic_filter')),
+        ),
+        Node(
+            package='xgo_driver_bridge',
+            executable='xgo_offline_odom_node',
+            name='xgo_offline_odom',
+            output='screen',
+            parameters=[
+                {
+                    'use_sim_time': True,
+                    'input_twist_topic': LaunchConfiguration('offline_twist_topic'),
+                    'input_imu_topic': LaunchConfiguration('offline_imu_topic'),
+                }
+            ],
+            condition=IfCondition(LaunchConfiguration('use_offline_odom')),
+        ),
+        Node(
+            package='xgo_driver_bridge',
+            executable='waypoint_accuracy_node',
+            name='waypoint_accuracy_monitor',
+            output='screen',
+            parameters=[
+                {
+                    'use_sim_time': True,
+                    'waypoints_file': LaunchConfiguration('waypoints_file'),
+                    'output_path': LaunchConfiguration('evaluation_output_path'),
+                }
+            ],
+            condition=IfCondition(LaunchConfiguration('use_waypoint_evaluator')),
         ),
         Node(
             package='image_transport',
