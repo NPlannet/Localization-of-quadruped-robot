@@ -1,0 +1,11 @@
+dynamic_scan_filter:
+  ros__parameters:
+    association_distance: 0.45
+    motion_jitter_tolerance: 0.10
+    range_adjustment_min_scale: 0.35
+    moving_speed_threshold: 0.22
+    static_speed_threshold: 0.10
+    moving_confirmations: 6
+    static_confirmations: 8
+    static_release_delay_sec: 3.0
+    filter_unconfirmed: false

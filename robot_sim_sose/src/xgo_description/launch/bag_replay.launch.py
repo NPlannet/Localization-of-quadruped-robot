@@ -18,6 +18,7 @@ def generate_launch_description():
     default_qos_overrides = os.path.join(config_dir, 'bag_play_qos_overrides.yaml')
     default_slam_params_filtered = os.path.join(config_dir, 'slam_toolbox_robot.yaml')
     default_slam_params_raw = os.path.join(config_dir, 'slam_toolbox_robot_raw.yaml')
+    default_dynamic_filter_params = os.path.join(config_dir, 'dynamic_scan_filter_bag_replay.yaml')
 
     slam_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
@@ -114,12 +115,20 @@ def generate_launch_description():
             default_value=os.path.join(config_dir, 'nav2_params.yaml'),
             description='Nav2 parameter file for bag replay.',
         ),
+        DeclareLaunchArgument(
+            'dynamic_filter_params_file',
+            default_value=default_dynamic_filter_params,
+            description='Dynamic scan filter parameter file used during bag replay.',
+        ),
         Node(
             package='dynamic_scan_filter',
             executable='dynamic_scan_filter_node',
             name='dynamic_scan_filter',
             output='screen',
-            parameters=[{'use_sim_time': True}],
+            parameters=[
+                LaunchConfiguration('dynamic_filter_params_file'),
+                {'use_sim_time': True},
+            ],
             condition=IfCondition(LaunchConfiguration('use_dynamic_filter')),
         ),
         Node(

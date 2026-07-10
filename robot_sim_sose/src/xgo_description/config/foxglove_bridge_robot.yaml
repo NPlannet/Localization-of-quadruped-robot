@@ -1,0 +1,17 @@
+foxglove_bridge:
+  ros__parameters:
+    use_compression: true
+    topic_whitelist:
+      - "^/rosout$"
+      - "^/parameter_events$"
+      - "^/tf$"
+      - "^/tf_static$"
+      - "^/odom$"
+      - "^/imu$"
+      - "^/battery_state$"
+      - "^/cmd_vel$"
+      - "^/xgo/yaw_deg$"
+      - "^/scan$"
+      - "^/scan_filtered$"
+      - "^/camera/camera_info$"
+      - "^/camera/image_raw/compressed$"

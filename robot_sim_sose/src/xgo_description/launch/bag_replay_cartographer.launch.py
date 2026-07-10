@@ -15,6 +15,7 @@ def generate_launch_description():
     workspace = os.environ.get('WORKSPACE', '/workspaces/robot_sim_sose')
     default_bag_path = os.path.join(workspace, 'bag', 'bag', 'round_001')
     default_qos_overrides = os.path.join(config_dir, 'bag_play_qos_overrides.yaml')
+    default_dynamic_filter_params = os.path.join(config_dir, 'dynamic_scan_filter_bag_replay.yaml')
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -73,6 +74,11 @@ def generate_launch_description():
             description='Cartographer Lua configuration file basename.',
         ),
         DeclareLaunchArgument(
+            'dynamic_filter_params_file',
+            default_value=default_dynamic_filter_params,
+            description='Dynamic scan filter parameter file used during bag replay.',
+        ),
+        DeclareLaunchArgument(
             'cartographer_scan_topic',
             default_value=PythonExpression([
                 "'/scan_filtered' if '",
@@ -101,7 +107,10 @@ def generate_launch_description():
             executable='dynamic_scan_filter_node',
             name='dynamic_scan_filter',
             output='screen',
-            parameters=[{'use_sim_time': True}],
+            parameters=[
+                LaunchConfiguration('dynamic_filter_params_file'),
+                {'use_sim_time': True},
+            ],
             condition=IfCondition(LaunchConfiguration('use_dynamic_filter')),
         ),
         Node(
