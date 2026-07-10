@@ -56,6 +56,7 @@ Run this inside the container:
 
 ```bash
 source /opt/ros/jazzy/setup.bash
+colcon build --packages-select dynamic_scan_filter --symlink-install
 colcon build --packages-select xgo_description --symlink-install
 source install/setup.bash
 ```
