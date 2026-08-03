@@ -17,10 +17,23 @@ def generate_launch_description():
         'WORKSPACE',
         os.path.abspath(os.path.join(pkg_share, '..', '..', '..', '..')),
     )
-    default_bag_path = os.path.join(workspace, 'w1 (1)', 'w1_nogt')
-    default_waypoints_path = os.path.join(workspace, 'w1 (1)', 'w1_nogt_waypoints.json')
-    default_eval_output = os.path.join(workspace, 'metrics', 'w1_slam_toolbox_waypoint_eval.json')
+    default_bag_path = os.path.join(workspace, 'w1', 'w1_nogt')
+    default_waypoints_path = os.path.join(workspace, 'w1', 'w1_nogt_waypoints.json')
+    default_eval_output_filtered = os.path.join(
+        workspace,
+        'metrics',
+        'w1_slam_toolbox_filtered_waypoint_eval.json',
+    )
+    default_eval_output_raw = os.path.join(
+        workspace,
+        'metrics',
+        'w1_slam_toolbox_raw_waypoint_eval.json',
+    )
     default_qos_overrides = os.path.join(config_dir, 'bag_play_qos_overrides.yaml')
+    default_dynamic_filter_params = os.path.join(
+        config_dir,
+        'dynamic_scan_filter_bag_replay.yaml',
+    )
     default_slam_params_filtered = os.path.join(config_dir, 'slam_toolbox_lifelong.yaml')
     default_slam_params_raw = os.path.join(config_dir, 'slam_toolbox_lifelong_raw.yaml')
 
@@ -70,7 +83,13 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'evaluation_output_path',
-            default_value=default_eval_output,
+            default_value=PythonExpression([
+                repr(default_eval_output_filtered),
+                " if '",
+                LaunchConfiguration('use_dynamic_filter'),
+                "' == 'true' else ",
+                repr(default_eval_output_raw),
+            ]),
             description='Output JSON path for waypoint localization metrics.',
         ),
         DeclareLaunchArgument(
@@ -119,6 +138,26 @@ def generate_launch_description():
             description='Evaluate map-frame localization accuracy against the waypoint sidecar.',
         ),
         DeclareLaunchArgument(
+            'evaluation_settling_window_sec',
+            default_value='1.0',
+            description='Centered time window used to obtain a stable pose at each waypoint.',
+        ),
+        DeclareLaunchArgument(
+            'evaluation_window_sample_count',
+            default_value='11',
+            description='Number of TF samples taken across each waypoint settling window.',
+        ),
+        DeclareLaunchArgument(
+            'evaluation_min_window_samples',
+            default_value='5',
+            description='Minimum successful TF samples required to score a waypoint.',
+        ),
+        DeclareLaunchArgument(
+            'evaluation_alignment_mode',
+            default_value='se2',
+            description="Coordinate-frame alignment: 'se2' or 'none'.",
+        ),
+        DeclareLaunchArgument(
             'republish_camera',
             default_value='true',
             description='Republish the recorded compressed camera stream as raw images.',
@@ -156,6 +195,13 @@ def generate_launch_description():
         ),
         Node(
             package='dynamic_scan_filter',
+            executable='scan_normalizer_node',
+            name='scan_normalizer',
+            output='screen',
+            parameters=[{'use_sim_time': True}],
+        ),
+        Node(
+            package='dynamic_scan_filter',
             executable='dynamic_scan_filter_node',
             name='dynamic_scan_filter',
             output='screen',
@@ -189,6 +235,16 @@ def generate_launch_description():
                     'use_sim_time': True,
                     'waypoints_file': LaunchConfiguration('waypoints_file'),
                     'output_path': LaunchConfiguration('evaluation_output_path'),
+                    'settling_window_sec': LaunchConfiguration(
+                        'evaluation_settling_window_sec'
+                    ),
+                    'window_sample_count': LaunchConfiguration(
+                        'evaluation_window_sample_count'
+                    ),
+                    'min_window_samples': LaunchConfiguration(
+                        'evaluation_min_window_samples'
+                    ),
+                    'alignment_mode': LaunchConfiguration('evaluation_alignment_mode'),
                 }
             ],
             condition=IfCondition(LaunchConfiguration('use_waypoint_evaluator')),

@@ -5,16 +5,24 @@ services:
       dockerfile: .devcontainer/Dockerfile.robot
     image: xgo-mini2-ros-jazzy:robot
     container_name: xgo_mini2_robot
+    user: root
     network_mode: host
     ipc: host
     privileged: true
+    devices:
+      - /dev/ttyAMA0:/dev/ttyAMA0
+      - /dev/ttyUSB0:/dev/ttyUSB0
+      - /dev/video0:/dev/video0
+      - /dev/media0:/dev/media0
+      - /dev/vchiq:/dev/vchiq
+    group_add:
+      - dialout
     environment:
       ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-42}
       RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
       SHELL: /bin/bash
     volumes:
       - .:/workspaces/robot_sim_sose
-      - /dev:/dev
       - /run/udev:/run/udev:ro
     working_dir: /workspaces/robot_sim_sose
     command: sleep infinity

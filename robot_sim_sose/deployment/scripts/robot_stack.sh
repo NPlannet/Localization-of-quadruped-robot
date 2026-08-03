@@ -5,11 +5,16 @@ WORKSPACE=${WORKSPACE:-/workspaces/robot_sim_sose}
 ROS_DISTRO=${ROS_DISTRO:-jazzy}
 SLAM_PARAMS=${SLAM_PARAMS:-${WORKSPACE}/src/xgo_description/config/slam_toolbox_robot.yaml}
 NAV2_PARAMS=${NAV2_PARAMS:-${WORKSPACE}/src/xgo_description/config/nav2_params.yaml}
-DYNAMIC_FILTER_PARAMS=${DYNAMIC_FILTER_PARAMS:-${WORKSPACE}/src/xgo_description/config/dynamic_scan_filter_bag_replay.yaml}
+DYNAMIC_FILTER_PARAMS=${DYNAMIC_FILTER_PARAMS:-${WORKSPACE}/src/xgo_driver_bridge/config/dynamic_scan_filter_robot.yaml}
 LIDAR_SERIAL_PORT=${LIDAR_SERIAL_PORT:-/dev/ttyUSB0}
+XGO_SERIAL_PORT=${XGO_SERIAL_PORT:-/dev/ttyAMA0}
+XGO_IMU_READ_MODE=${XGO_IMU_READ_MODE:-orientation_registers}
+ENABLE_MOTION=${ENABLE_MOTION:-false}
 FOXGLOVE_PORT=${FOXGLOVE_PORT:-8766}
-FOXGLOVE_PARAMS=${FOXGLOVE_PARAMS:-${WORKSPACE}/src/xgo_description/config/foxglove_bridge_robot.yaml}
-CAMERA_PARAMS=${CAMERA_PARAMS:-${WORKSPACE}/deployment/config/camera_ros_robot.yaml}
+FOXGLOVE_PARAMS=${FOXGLOVE_PARAMS:-${WORKSPACE}/src/xgo_driver_bridge/config/foxglove_bridge_robot.yaml}
+CAMERA_PARAMS=${CAMERA_PARAMS:-${WORKSPACE}/src/xgo_driver_bridge/config/camera_ros_robot.yaml}
+SLAM_METHOD=${SLAM_METHOD:-none}
+SLAM_SCAN_TOPIC=${SLAM_SCAN_TOPIC:-/scan_filtered}
 
 source_setup() {
   set +u
@@ -30,11 +35,11 @@ Usage: bash scripts/robot_stack.sh <command>
 
 Commands:
   check          Check required robot topics and TF.
-  xgo-bridge     Start the XGO SDK bridge with motion disabled.
-  xgo-motion     Start the XGO SDK bridge with /cmd_vel motion enabled.
+  xgo-bridge     Start the XGO SDK bridge on ${XGO_SERIAL_PORT} with motion disabled.
+  xgo-motion     Start the XGO SDK bridge on ${XGO_SERIAL_PORT} with /cmd_vel motion enabled.
   lidar          Start the LD19/LDROBOT LiDAR driver on ${LIDAR_SERIAL_PORT}.
   camera         Start camera_ros with the robot camera config and publish /camera/image_raw/compressed.
-  sensors        Print commands for starting robot, LiDAR, camera, and Foxglove.
+  sensors        Start sensors plus optional SLAM_METHOD in one ROS 2 launch.
   filter         Start dynamic_scan_filter: /scan -> /scan_filtered.
   slam           Start slam_toolbox with real-robot params.
   nav2           Start Nav2 with real time.
@@ -47,8 +52,10 @@ EOF
 }
 
 check_topics() {
+  ls -l "${XGO_SERIAL_PORT}" "${LIDAR_SERIAL_PORT}" /dev/video0 /dev/media0 /dev/vchiq
   ros2 topic list
   timeout 5 ros2 topic hz /scan || true
+  timeout 5 ros2 topic hz /imu/data || true
   timeout 5 ros2 topic echo /odom --once || true
   timeout 5 ros2 run tf2_ros tf2_echo odom base_link || true
 }
@@ -94,10 +101,16 @@ case "${1:-}" in
     check_topics
     ;;
   xgo-bridge)
-    ros2 launch xgo_driver_bridge xgo_bridge.launch.py enable_motion:=false
+    ros2 launch xgo_driver_bridge xgo_bridge.launch.py \
+      port:="${XGO_SERIAL_PORT}" \
+      imu_read_mode:="${XGO_IMU_READ_MODE}" \
+      enable_motion:=false
     ;;
   xgo-motion)
-    ros2 launch xgo_driver_bridge xgo_bridge.launch.py enable_motion:=true
+    ros2 launch xgo_driver_bridge xgo_bridge.launch.py \
+      port:="${XGO_SERIAL_PORT}" \
+      imu_read_mode:="${XGO_IMU_READ_MODE}" \
+      enable_motion:=true
     ;;
   lidar)
     ros2 launch ldlidar_stl_ros2 ld19.launch.py serial_port:="${LIDAR_SERIAL_PORT}"
@@ -110,21 +123,14 @@ case "${1:-}" in
       -r camera_info:=/camera/camera_info
     ;;
   sensors)
-    cat <<EOF
-Open one container shell per command:
-
-  bash scripts/robot_stack.sh xgo-bridge
-  bash scripts/robot_stack.sh lidar
-  bash scripts/robot_stack.sh camera
-  bash scripts/robot_stack.sh foxglove
-
-After those are running, verify:
-
-  ros2 topic hz /scan
-  ros2 topic echo /scan --once
-  ros2 topic hz /camera/image_raw/compressed
-
-EOF
+    ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
+      xgo_port:="${XGO_SERIAL_PORT}" \
+      lidar_port:="${LIDAR_SERIAL_PORT}" \
+      foxglove_port:="${FOXGLOVE_PORT}" \
+      xgo_imu_read_mode:="${XGO_IMU_READ_MODE}" \
+      enable_motion:="${ENABLE_MOTION}" \
+      slam_method:="${SLAM_METHOD}" \
+      slam_scan_topic:="${SLAM_SCAN_TOPIC}"
     ;;
   filter)
     ros2 run dynamic_scan_filter dynamic_scan_filter_node --ros-args \

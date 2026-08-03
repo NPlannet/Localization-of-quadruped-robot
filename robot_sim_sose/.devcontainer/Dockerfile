@@ -22,6 +22,7 @@ RUN if id -u $USER_UID >/dev/null 2>&1; then \
         ros-$ROS_DISTRO-tf-transformations \
         ros-$ROS_DISTRO-navigation2 \
         ros-$ROS_DISTRO-nav2-bringup \
+        ros-$ROS_DISTRO-rtabmap-ros \
         ros-$ROS_DISTRO-rosbag2-storage-mcap \
     && rm -rf /var/lib/apt/lists/*\
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \

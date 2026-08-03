@@ -2,6 +2,7 @@
 robot_sim_sose/build/
 robot_sim_sose/install/
 robot_sim_sose/log/
+robot_sim_sose/evaluation_runs/
 
 # images made with the camera
 *.png
@@ -22,4 +23,8 @@ __pycache__/
 *.swp
 
 
-bag
+w1/
+/robot_sim_sose/bag/
+/robot_sim_sose/w1/
+/robot_sim_sose/maps/*.db
+/robot_sim_sose/evaluation_runs/

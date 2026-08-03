@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    # With one connected camera, camera_ros automatically selects the OV5647.
+    # The "0:" shown during discovery is an index, not a camera name.
+    format: "BGR888"
+    width: 640
+    height: 480
+    frame_id: "camera_optical_frame"
+
+    # Add the physical camera calibration before quantitative visual-SLAM work.
+    # camera_info_url: "file:///workspaces/robot_sim_sose/deployment/config/ov5647_640x480_calibration.yaml"

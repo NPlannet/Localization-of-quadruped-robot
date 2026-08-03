@@ -1,5 +1,6 @@
 dynamic_scan_filter:
   ros__parameters:
+    input_scan_topic: /scan_normalized
     association_distance: 0.45
     motion_jitter_tolerance: 0.10
     range_adjustment_min_scale: 0.35

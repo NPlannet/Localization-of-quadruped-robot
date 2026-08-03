@@ -23,6 +23,9 @@
   
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>cartographer_ros</exec_depend>
+  <exec_depend>rtabmap_slam</exec_depend>
+  <exec_depend>rtabmap_util</exec_depend>
+  <exec_depend>rtabmap_viz</exec_depend>
   <exec_depend>dynamic_scan_filter</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>

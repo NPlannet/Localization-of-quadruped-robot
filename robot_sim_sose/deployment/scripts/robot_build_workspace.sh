@@ -26,7 +26,10 @@ if [ -d "${WORKSPACE}/src/ldlidar_stl_ros2" ]; then
   PACKAGES+=(ldlidar_stl_ros2)
 fi
 
-colcon build --symlink-install --packages-select "${PACKAGES[@]}"
+colcon build \
+  --symlink-install \
+  --packages-select "${PACKAGES[@]}" \
+  --cmake-args -DBUILD_TESTING=OFF
 
 if [ -f "${WORKSPACE}/install/setup.bash" ]; then
   source_setup "${WORKSPACE}/install/setup.bash"

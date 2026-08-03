@@ -50,7 +50,7 @@ Run this inside the container:
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-colcon build --packages-select xgo_description --symlink-install
+  colcon build --packages-select xgo_description --symlink-install
 source install/setup.bash
 ```
 
@@ -112,31 +112,3 @@ You can also stop the container from Docker Desktop.
 
 
 
-
-## 8. Replay Real Robot Bags Without Gazebo
-
-If you recorded data from the real robot into `robot_sim_sose/bag/...`, you can replay that data directly into the localization stack without starting Gazebo.
-
-Build the needed workspace packages inside the dev container:
-
-```bash
-source /opt/ros/jazzy/setup.bash
-colcon build --symlink-install --packages-select xgo_description dynamic_scan_filter
-source install/setup.bash
-```
-
-Then launch bag replay with SLAM and RViz:
-
-```bash
-ros2 launch xgo_description bag_replay.launch.py \
-  bag_path:=/workspaces/robot_sim_sose/bag/bag/round_002 \
-  use_nav2:=false use_dynamic_filter:=true
-
-ros2 launch xgo_description bag_replay_cartographer.launch.py \
-  bag_path:=/workspaces/robot_sim_sose/bag/bag/round_002 \
-  use_dynamic_filter:=true
-```
-
-Notes:
-- Use any bag directory that contains a `metadata.yaml`, for example `round_002` or `straightline1`.
-- `use_nav2:=true` can be added if you want to inspect costmaps and planning, but replayed bags are not interactive robot control.

@@ -6,6 +6,7 @@ ARG USER_GID=$USER_UID
 ARG INSTALL_XGO_SDK=true
 ARG REQUIRE_LIDAR_DRIVER=true
 ARG LIBCAMERA_RPI_TAG=v0.7.1+rpt20260429
+ARG XGOLIB_VERSION=1.1.8
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=jazzy
@@ -63,13 +64,18 @@ RUN if id -u ${USERNAME} >/dev/null 2>&1; then \
         v4l-utils \
         vim-tiny \
         ros-${ROS_DISTRO}-camera-ros \
+        ros-${ROS_DISTRO}-cartographer-ros \
         ros-${ROS_DISTRO}-foxglove-bridge \
         ros-${ROS_DISTRO}-nav2-map-server \
         ros-${ROS_DISTRO}-nav2-bringup \
         ros-${ROS_DISTRO}-nav2-simple-commander \
         ros-${ROS_DISTRO}-navigation2 \
+        ros-${ROS_DISTRO}-rtabmap-slam \
+        ros-${ROS_DISTRO}-rosbag2 \
+        ros-${ROS_DISTRO}-rosbag2-storage-mcap \
         ros-${ROS_DISTRO}-slam-toolbox \
         ros-${ROS_DISTRO}-tf2-ros \
+        ros-${ROS_DISTRO}-tf2-ros-py \
         ros-${ROS_DISTRO}-tf-transformations \
         ros-${ROS_DISTRO}-camera-info-manager \
         ros-${ROS_DISTRO}-image-transport-plugins \
@@ -111,7 +117,7 @@ RUN apt-get update \
 
 RUN if [ "${INSTALL_XGO_SDK}" = "true" ]; then \
         pip install --break-system-packages \
-            xgolib \
+            "xgolib==${XGOLIB_VERSION}" \
             pyserial \
             pyserial-asyncio \
             smbus2 \
@@ -120,14 +126,27 @@ RUN if [ "${INSTALL_XGO_SDK}" = "true" ]; then \
             rpi-lgpio; \
     fi
 
-RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/${USERNAME}/.bashrc \
+RUN if [ "${INSTALL_XGO_SDK}" = "true" ]; then \
+        python3 -c "from importlib.metadata import version; installed = version('xgolib'); assert installed == '${XGOLIB_VERSION}', installed; print('Installed official xgolib:', installed)"; \
+    fi \
+    && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/${USERNAME}/.bashrc \
     && echo "cd /workspaces/robot_sim_sose 2>/dev/null || true" >> /home/${USERNAME}/.bashrc \
     && echo "[ -f install/setup.bash ] && source install/setup.bash" >> /home/${USERNAME}/.bashrc \
     && echo "alias robot-build='bash /workspaces/robot_sim_sose/scripts/robot_build_workspace.sh'" >> /home/${USERNAME}/.bashrc \
     && echo "alias robot-stack='bash /workspaces/robot_sim_sose/scripts/robot_stack.sh'" >> /home/${USERNAME}/.bashrc \
-    && chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.bashrc
+    && echo "alias robot-sensors='ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py'" >> /home/${USERNAME}/.bashrc \
+    && chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.bashrc \
+    && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc \
+    && echo "cd /workspaces/robot_sim_sose 2>/dev/null || true" >> /root/.bashrc \
+    && echo "[ -f install/setup.bash ] && source install/setup.bash" >> /root/.bashrc \
+    && echo "alias robot-build='bash /workspaces/robot_sim_sose/scripts/robot_build_workspace.sh'" >> /root/.bashrc \
+    && echo "alias robot-stack='bash /workspaces/robot_sim_sose/scripts/robot_stack.sh'" >> /root/.bashrc \
+    && echo "alias robot-sensors='ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py'" >> /root/.bashrc
 
-USER ${USERNAME}
+# This is a single-purpose, privileged hardware container. Running its ROS
+# processes as root matches the verified xgo6_v6 setup and avoids host/container
+# GID mismatches for the Raspberry Pi media graph and serial devices.
+USER root
 WORKDIR /workspaces/robot_sim_sose
 
 CMD ["sleep", "infinity"]

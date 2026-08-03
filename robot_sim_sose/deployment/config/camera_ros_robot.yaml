@@ -1,8 +1,8 @@
 /**:
   ros__parameters:
-    # camera_ros on the robot rejected the short name "ov5647".
-    # The package's own launch file uses "0" as the default camera selector.
-    camera: "0"
+    # Do not set the `camera` parameter when only one camera is connected.
+    # camera_ros then selects the detected camera automatically. The "0:" shown
+    # in its camera list is a display index, not a valid camera name.
     format: "BGR888"
     width: 640
     height: 480

@@ -6,7 +6,9 @@ options = {
   trajectory_builder = TRAJECTORY_BUILDER,
   map_frame = "map",
   tracking_frame = "base_link",
-  published_frame = "base_link",
+  -- Replayed odometry already publishes odom -> base_link. Publishing the
+  -- Cartographer correction at odom gives one valid tree: map -> odom -> base_link.
+  published_frame = "odom",
   odom_frame = "odom",
   provide_odom_frame = false,
   publish_frame_projected_to_2d = true,
