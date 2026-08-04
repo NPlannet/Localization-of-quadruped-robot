@@ -139,7 +139,11 @@ class RobotController(Node):
 
     def save_map_image(self):
         if self.map_data is not None:
-            os.makedirs("maps", exist_ok=True)
+            output_dir = os.environ.get(
+                'EXPLORATION_MAP_DIR',
+                'evaluation/runs/exploration_maps',
+            )
+            os.makedirs(output_dir, exist_ok=True)
             img = np.zeros_like(self.map_data, dtype=np.uint8)
         
             img[self.map_data == -1] = 128
@@ -147,7 +151,7 @@ class RobotController(Node):
             img[self.map_data == 100] = 0
         
             image = PILImage.fromarray(img)
-            image.save(f"maps/map_{self.iteration:04d}.png")
+            image.save(os.path.join(output_dir, f"map_{self.iteration:04d}.png"))
             self.iteration += 1
             
     def explore_step(self):

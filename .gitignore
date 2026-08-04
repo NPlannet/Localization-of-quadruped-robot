@@ -3,10 +3,16 @@ robot_sim_sose/build/
 robot_sim_sose/install/
 robot_sim_sose/log/
 robot_sim_sose/evaluation_runs/
+robot_sim_sose/evaluation/runs/
+robot_sim_sose/evaluation/datasets/**/*.mcap
+robot_sim_sose/evaluation/results/**/*.db
 
 # images made with the camera
 *.png
 *.jpg
+
+# Presentation plots are deliberate evaluation artifacts.
+!robot_sim_sose/evaluation/results/**/*.png
 
 # Python cache files
 __pycache__/
@@ -23,7 +29,6 @@ __pycache__/
 *.swp
 
 
-w1/
 /robot_sim_sose/bag/
 /robot_sim_sose/w1/
 /robot_sim_sose/maps/*.db

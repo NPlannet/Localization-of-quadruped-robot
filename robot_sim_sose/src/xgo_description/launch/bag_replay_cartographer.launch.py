@@ -16,15 +16,17 @@ def generate_launch_description():
         'WORKSPACE',
         os.path.abspath(os.path.join(pkg_share, '..', '..', '..', '..')),
     )
-    default_bag_path = os.path.join(workspace, 'w1', 'w1_nogt')
-    default_waypoints_path = os.path.join(workspace, 'w1', 'w1_nogt_waypoints.json')
+    dataset_dir = os.path.join(workspace, 'evaluation', 'datasets', 'w1')
+    results_dir = os.path.join(workspace, 'evaluation', 'results', 'w1')
+    default_bag_path = os.path.join(dataset_dir, 'bag')
+    default_waypoints_path = os.path.join(dataset_dir, 'waypoints.json')
     default_eval_output_filtered = os.path.join(
-        workspace,
+        results_dir,
         'metrics',
         'w1_cartographer_filtered_waypoint_eval.json',
     )
     default_eval_output_raw = os.path.join(
-        workspace,
+        results_dir,
         'metrics',
         'w1_cartographer_raw_waypoint_eval.json',
     )
@@ -140,7 +142,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'cartographer_config_basename',
-            default_value='cartographer_robot_2d.lua',
+            default_value='cartographer_replay_2d.lua',
             description='Cartographer Lua configuration file basename.',
         ),
         DeclareLaunchArgument(

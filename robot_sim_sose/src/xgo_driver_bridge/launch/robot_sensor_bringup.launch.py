@@ -422,7 +422,10 @@ def generate_launch_description():
             'rtabmap_database_path',
             default_value=os.path.join(
                 os.environ.get('WORKSPACE', '/workspaces/robot_sim_sose'),
-                'maps',
+                'evaluation',
+                'results',
+                'live',
+                'databases',
                 'rtabmap_robot.db',
             ),
             description='Persistent RTAB-Map database file.',

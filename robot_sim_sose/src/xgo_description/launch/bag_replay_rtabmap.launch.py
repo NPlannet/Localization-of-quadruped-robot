@@ -23,26 +23,28 @@ def generate_launch_description():
         'WORKSPACE',
         os.path.abspath(os.path.join(pkg_share, '..', '..', '..', '..')),
     )
+    dataset_dir = os.path.join(workspace, 'evaluation', 'datasets', 'w1')
+    results_dir = os.path.join(workspace, 'evaluation', 'results', 'w1')
 
     metric_paths = {
         (True, True): os.path.join(
-            workspace, 'metrics', 'w1_rtabmap_rgb_filtered_waypoint_eval.json'
+            results_dir, 'metrics', 'w1_rtabmap_rgb_filtered_waypoint_eval.json'
         ),
         (True, False): os.path.join(
-            workspace, 'metrics', 'w1_rtabmap_rgb_raw_waypoint_eval.json'
+            results_dir, 'metrics', 'w1_rtabmap_rgb_raw_waypoint_eval.json'
         ),
         (False, True): os.path.join(
-            workspace, 'metrics', 'w1_rtabmap_lidar_filtered_waypoint_eval.json'
+            results_dir, 'metrics', 'w1_rtabmap_lidar_filtered_waypoint_eval.json'
         ),
         (False, False): os.path.join(
-            workspace, 'metrics', 'w1_rtabmap_lidar_raw_waypoint_eval.json'
+            results_dir, 'metrics', 'w1_rtabmap_lidar_raw_waypoint_eval.json'
         ),
     }
     database_paths = {
-        (True, True): os.path.join(workspace, 'maps', 'w1_rtabmap_rgb_filtered.db'),
-        (True, False): os.path.join(workspace, 'maps', 'w1_rtabmap_rgb_raw.db'),
-        (False, True): os.path.join(workspace, 'maps', 'w1_rtabmap_lidar_filtered.db'),
-        (False, False): os.path.join(workspace, 'maps', 'w1_rtabmap_lidar_raw.db'),
+        (True, True): os.path.join(results_dir, 'databases', 'w1_rtabmap_rgb_filtered.db'),
+        (True, False): os.path.join(results_dir, 'databases', 'w1_rtabmap_rgb_raw.db'),
+        (False, True): os.path.join(results_dir, 'databases', 'w1_rtabmap_lidar_filtered.db'),
+        (False, False): os.path.join(results_dir, 'databases', 'w1_rtabmap_lidar_raw.db'),
     }
 
     def four_way_default(paths):
@@ -127,7 +129,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'bag_path',
-            default_value=os.path.join(workspace, 'w1', 'w1_nogt'),
+            default_value=os.path.join(dataset_dir, 'bag'),
             description='Path to the W1 rosbag2 directory.',
         ),
         DeclareLaunchArgument('playback_rate', default_value='1.0'),
@@ -137,7 +139,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'waypoints_file',
-            default_value=os.path.join(workspace, 'w1', 'w1_nogt_waypoints.json'),
+            default_value=os.path.join(dataset_dir, 'waypoints.json'),
         ),
         DeclareLaunchArgument('use_dynamic_filter', default_value='true'),
         DeclareLaunchArgument(

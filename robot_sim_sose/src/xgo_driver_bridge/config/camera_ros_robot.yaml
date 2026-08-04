@@ -8,4 +8,4 @@
     frame_id: "camera_optical_frame"
 
     # Add the physical camera calibration before quantitative visual-SLAM work.
-    # camera_info_url: "file:///workspaces/robot_sim_sose/deployment/config/ov5647_640x480_calibration.yaml"
+    # camera_info_url: "file:///workspaces/robot_sim_sose/src/xgo_driver_bridge/config/ov5647_640x480_calibration.yaml"

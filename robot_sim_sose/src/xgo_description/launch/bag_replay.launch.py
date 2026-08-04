@@ -17,15 +17,17 @@ def generate_launch_description():
         'WORKSPACE',
         os.path.abspath(os.path.join(pkg_share, '..', '..', '..', '..')),
     )
-    default_bag_path = os.path.join(workspace, 'w1', 'w1_nogt')
-    default_waypoints_path = os.path.join(workspace, 'w1', 'w1_nogt_waypoints.json')
+    dataset_dir = os.path.join(workspace, 'evaluation', 'datasets', 'w1')
+    results_dir = os.path.join(workspace, 'evaluation', 'results', 'w1')
+    default_bag_path = os.path.join(dataset_dir, 'bag')
+    default_waypoints_path = os.path.join(dataset_dir, 'waypoints.json')
     default_eval_output_filtered = os.path.join(
-        workspace,
+        results_dir,
         'metrics',
         'w1_slam_toolbox_filtered_waypoint_eval.json',
     )
     default_eval_output_raw = os.path.join(
-        workspace,
+        results_dir,
         'metrics',
         'w1_slam_toolbox_raw_waypoint_eval.json',
     )

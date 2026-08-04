@@ -7,6 +7,7 @@ __pycache__/
 maps/
 detections/
 evaluation_runs/
+evaluation/
 .git/
 .codex/
 .agents/

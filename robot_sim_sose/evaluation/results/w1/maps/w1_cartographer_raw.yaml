@@ -1,4 +1,4 @@
-image: w1_cartograhper_unfiltered.pgm
+image: w1_cartographer_raw.pgm
 mode: trinary
 resolution: 0.050
 origin: [-4.076, -3.294, 0]

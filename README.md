@@ -1,154 +1,152 @@
-Welcome to our semester project, the localization of a quadruped robot.
+# Localization of a Quadruped Robot
 
-## Running On The Real XGO Mini2
+ROS 2 Jazzy workspace for evaluating mapping and localization on the XGO
+Mini2 quadruped robot. The project supports Gazebo simulation, a physical
+Raspberry Pi robot, repeatable rosbag replay, and comparisons between:
 
-For the physical robot, use the robot container deployment instead of the Gazebo simulation launch files:
+- SLAM Toolbox;
+- Cartographer;
+- RTAB-Map with optional RGB loop recognition; and
+- raw versus dynamically filtered LiDAR scans.
+
+## Repository Guide
+
+The ROS workspace is in `robot_sim_sose/`:
+
+```text
+robot_sim_sose/
+├── docs/            Project guides
+├── scripts/         User-facing build, deployment, recording, and analysis tools
+├── evaluation/      Datasets, generated runs, and evaluation results
+├── src/             Project-owned ROS 2 packages
+├── third_party/     Vendored ROS packages
+├── .devcontainer/   Development and robot Dockerfiles
+└── docker-compose*.yml
+```
+
+Start with the guide matching your task:
+
+- [Architecture and package responsibilities](robot_sim_sose/docs/architecture.md)
+- [Gazebo simulation](robot_sim_sose/docs/simulation.md)
+- [Physical robot deployment](robot_sim_sose/docs/robot-deployment.md)
+- [Raspberry Pi host configuration](robot_sim_sose/docs/raspberry-pi-setup.md)
+- [Bag replay and evaluation](robot_sim_sose/docs/evaluation.md)
+
+## Development Container
+
+From the repository root:
 
 ```bash
 cd robot_sim_sose
-docker compose -f docker-compose.robot.yml build
-docker compose -f docker-compose.robot.yml up -d
-```
-
-Then follow the full checklist in [`robot_sim_sose/ROBOT_DEPLOYMENT.md`](robot_sim_sose/ROBOT_DEPLOYMENT.md).
-
-## 1. Install Docker
-
-Install Docker before building the project.
-
-Check that Docker works:
-
-```bash
-docker --version
-docker compose version
-```
-
-## 2. Clone the Repository
-
-```bash
-git clone <repository-url>
-cd Localization-of-quadruped-robot/robot_sim_sose
-```
-
-## 3. Start the Development Container
-
-Build and start the container:
-
-```bash
 docker compose up -d --build
+docker compose exec ros-dev bash
 ```
 
-For an NVIDIA GPU-enabled setup, add the override file:
+For NVIDIA GPU support:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.nvidia.yml up -d --build
 ```
 
-Open a shell inside the container:
-
-```bash
-docker compose exec ros-dev bash
-```
-
-## 4. Build the ROS Workspace
-
-Run this inside the container:
+Inside the container:
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-colcon build --packages-select dynamic_scan_filter --symlink-install
-colcon build --packages-select xgo_description --symlink-install
+colcon build --symlink-install
 source install/setup.bash
 ```
 
-## 5. Run the simulation, including SLAM and navigation
+## Quick Start: Simulation
 
-(not necessary in WSL2)
-```bash
-to Connect to an X server running on your local machine:
+Inside the development container:
 
-export DISPLAY=:1 or export DISPLAY=:0 # if your local machine display server has the number 0.
-to Connect to an X server running on another machine:
-
-export DISPLAY=host.docker.internal:0.0  
-```
-start XLaunch with
-- multiple windows
-- start no client
-- disable access control
-
-
-for running the default world
 ```bash
 ros2 launch xgo_description simulation.launch.py
 ```
 
-for running the real objects world with explicit path:
+See [docs/simulation.md](robot_sim_sose/docs/simulation.md) for display,
+world, RViz, camera, and exploration instructions.
+
+## Quick Start: Physical Robot
+
+Sync the runtime from the laptop:
+
 ```bash
-ros2 launch xgo_description simulation.launch.py world:=/workspaces/robot_sim_sose/src/xgo_description/worlds/real_objects_world.sdf
+cd robot_sim_sose
+bash scripts/sync_robot_runtime.sh pi@robodoge1.local
 ```
 
-The Gazebo-based launches start a `dynamic_scan_filter` node automatically.
-- Raw LiDAR stays on `/scan` for live obstacle handling.
-- Filtered LiDAR is published on `/scan_filtered` and is used by `slam_toolbox`.
-- Cluster markers are published on `/dynamic_scan_filter/cluster_markers` and shown in the saved RViz layout..
+On the robot, enter the hardware container and build the workspace:
 
-# 6. run exploration: 
 ```bash
-python3 explore.py
+cd ~/robot_sim_sose
+docker compose -f docker-compose.robot.yml up -d
+docker compose -f docker-compose.robot.yml exec xgo-robot bash
+bash scripts/robot_build_workspace.sh
 ```
 
+Start the robot without SLAM while retaining motion, Lichtblick, both LiDAR
+topics, camera, IMU, and odometry:
 
-# 7. Visuals (RVIZ, and camera image)
-open a new terminal in the docker image and run:
 ```bash
-ros2 launch xgo_description rviz_slam.launch.py
-ros2 run rqt_image_view rqt_image_view --ros-args -r image:=/camera/image_raw
+ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
+  enable_motion:=true \
+  start_foxglove:=true \
+  start_dynamic_filter:=true \
+  slam_method:=none
 ```
 
-EXTRAS:
+See [docs/robot-deployment.md](robot_sim_sose/docs/robot-deployment.md) before
+operating the physical robot.
 
+## Quick Start: Record A Dataset
 
-Server-only mode:
-```bash
-ros2 launch xgo_description gazebo_fast.launch.py gui:=false
-
-Stop the Container:
-
-From the host terminal in `robot_sim_sose`:
+With the robot bringup already running, open a second shell in the same
+container:
 
 ```bash
-docker compose down
-```
-You can also stop the container from Docker Desktop.
-
-
-
-
-## 8. Replay Real Robot Bags Without Gazebo
-
-If you recorded data from the real robot into `robot_sim_sose/bag/...`, you can replay that data directly into the localization stack without starting Gazebo.
-
-Build the needed workspace packages inside the dev container:
-
-```bash
-source /opt/ros/jazzy/setup.bash
-colcon build --symlink-install --packages-select xgo_description dynamic_scan_filter
-source install/setup.bash
+bash scripts/record_robot_run.sh sensor_only_run1
 ```
 
-Then launch bag replay with SLAM and RViz:
+Press `Ctrl+C` once to finalize the MCAP bag and resource summary. The existing
+robot bringup remains running. New runs are written under:
+
+```text
+robot_sim_sose/evaluation/runs/<run_name>/
+```
+
+## Quick Start: Replay W1
+
+The replay launches default to the structured W1 dataset and result paths:
 
 ```bash
 ros2 launch xgo_description bag_replay.launch.py \
-  bag_path:=/workspaces/robot_sim_sose/bag/bag/round_002 \
-  use_nav2:=false use_dynamic_filter:=true
+  use_dynamic_filter:=true
 
 ros2 launch xgo_description bag_replay_cartographer.launch.py \
-  bag_path:=/workspaces/robot_sim_sose/bag/bag/round_002 \
-  use_dynamic_filter:=true
+  use_dynamic_filter:=false
+
+ros2 launch xgo_description bag_replay_rtabmap.launch.py \
+  use_dynamic_filter:=true use_camera:=true
 ```
 
-Notes:
-- Use any bag directory that contains a `metadata.yaml`, for example `round_002` or `straightline1`.
-- `use_nav2:=true` can be added if you want to inspect costmaps and planning, but replayed bags are not interactive robot control.
+See [docs/evaluation.md](robot_sim_sose/docs/evaluation.md) for methodology,
+output files, and plotting.
+
+## Main ROS Packages
+
+| Package | Responsibility |
+| --- | --- |
+| `xgo_description` | URDF, Gazebo simulation, visualization, and offline replay launches |
+| `xgo_driver_bridge` | Physical XGO SDK bridge, odometry, robot bringup, and mapper selection |
+| `dynamic_scan_filter` | Filters dynamic LiDAR returns into `/scan_filtered` |
+| `nav2_wfd` | Wavefront-frontier exploration using Nav2 |
+| `yolo_detector` | Optional camera object detection experiment |
+| `ldlidar_stl_ros2` | Third-party LD19 driver under `third_party/` |
+
+## Generated And Large Data
+
+Raw MCAP bags, RTAB-Map databases, and temporary runs are intentionally kept
+out of ordinary Git tracking. Store important datasets externally or with Git
+LFS. Small reproducible artifacts such as metrics JSON, map YAML/PGM files,
+and presentation plots belong under `evaluation/results/`.

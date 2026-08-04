@@ -168,9 +168,55 @@ ENABLE_MOTION=true SLAM_METHOD=cartographer SLAM_SCAN_TOPIC=/scan \
 
 ## 4. Record An Evaluation Run And CPU Use
 
-The robot image explicitly installs `rosbag2` and its MCAP storage plugin. A
-single command can start one mapper, record its ROS topics, and sample CPU, RAM,
-CPU frequency, and Raspberry Pi temperature:
+The robot image explicitly installs `rosbag2` and its MCAP storage plugin.
+
+### Record An Already-Running Bringup
+
+This is the recommended workflow when controlling the robot through Lichtblick.
+Start the normal bringup in the first terminal, including motion, Foxglove, and
+the selected mapper:
+
+```bash
+ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
+  enable_motion:=true \
+  start_foxglove:=true \
+  slam_method:=slam_toolbox \
+  slam_scan_topic:=/scan_filtered
+```
+
+In a second terminal inside the same container, attach the recorder:
+
+```bash
+bash scripts/record_robot_run.sh slam_toolbox_filtered_run1
+```
+
+This script does not launch, stop, or change the bringup. It records the bag,
+CPU/RAM measurements, the ROS node/topic inventory, and details of the active
+mapper subscriptions. It records both `/scan` and `/scan_filtered` when they
+are available, making the captured sensor data useful for later replay. Press
+`Ctrl+C` to stop only the recording; the robot bringup and Lichtblick connection
+remain running.
+
+Compressed camera recording is enabled by default. Disable it when measuring a
+non-visual mapper without camera-recording overhead:
+
+```bash
+RECORD_CAMERA=false \
+  bash scripts/record_robot_run.sh slam_toolbox_filtered_run1
+```
+
+sync recorded run with laptop from robot (with bash inside of ./robot_sim_sose) 
+
+
+```bash
+rsync -avP \
+  pi@robodoge1.local:~/robot_sim_sose/evaluation_runs/sensor_only_run1/ \
+  evaluation_runs/sensor_only_run1/
+```
+### Start Bringup And Recording Together
+
+The older self-contained command starts one mapper, records its ROS topics, and
+samples CPU, RAM, CPU frequency, and Raspberry Pi temperature:
 
 ```bash
 bash scripts/robot_evaluation_run.sh \

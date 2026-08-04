@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument(
         '--output',
         type=Path,
-        default=Path('metrics/xgo_orientation_recording.csv'),
+        default=Path('evaluation/results/live/metrics/xgo_orientation_recording.csv'),
     )
     return parser.parse_args()
 

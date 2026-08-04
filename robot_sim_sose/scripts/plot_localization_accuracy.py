@@ -23,17 +23,18 @@ COLORS = {'Raw': '#8C96A3', 'Filtered': '#D62728'}
 
 def parse_args():
     project_dir = Path(__file__).resolve().parents[1]
+    results_dir = project_dir / 'evaluation' / 'results' / 'w1'
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         '--metrics-dir',
         type=Path,
-        default=project_dir / 'metrics',
+        default=results_dir / 'metrics',
         help='Directory containing the waypoint evaluation JSON files.',
     )
     parser.add_argument(
         '--output',
         type=Path,
-        default=project_dir / 'metrics' / 'localization_accuracy_mae.png',
+        default=results_dir / 'plots' / 'localization_accuracy_mae.png',
         help='PNG file to create.',
     )
     parser.add_argument(
