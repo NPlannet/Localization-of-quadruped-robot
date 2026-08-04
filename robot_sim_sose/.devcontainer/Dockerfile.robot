@@ -71,6 +71,7 @@ RUN if id -u ${USERNAME} >/dev/null 2>&1; then \
         ros-${ROS_DISTRO}-nav2-simple-commander \
         ros-${ROS_DISTRO}-navigation2 \
         ros-${ROS_DISTRO}-rtabmap-slam \
+        ros-${ROS_DISTRO}-rtabmap-util \
         ros-${ROS_DISTRO}-rosbag2 \
         ros-${ROS_DISTRO}-rosbag2-storage-mcap \
         ros-${ROS_DISTRO}-slam-toolbox \

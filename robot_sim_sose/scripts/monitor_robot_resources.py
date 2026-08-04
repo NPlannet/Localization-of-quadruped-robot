@@ -85,7 +85,17 @@ def classify_process(command: str, comm: str) -> str | None:
         return None
     if "robot_evaluation_run.sh" in text:
         return "evaluation_runner"
-    if "ros2 bag record" in text or "rosbag2_transport" in text:
+    if (
+        "ros2 bag play" in text
+        or "/rosbag2_transport/play" in text
+        or "rosbag2_transport play" in text
+    ):
+        return "bag_player"
+    if (
+        "ros2 bag record" in text
+        or "/rosbag2_transport/record" in text
+        or "rosbag2_transport record" in text
+    ):
         return "bag_recorder"
     if "ros2 launch" in text or "robot_sensor_bringup.launch.py" in text:
         return "ros_launch"
@@ -101,9 +111,15 @@ def classify_process(command: str, comm: str) -> str | None:
     if "/lib/rtabmap_slam/rtabmap" in text:
         return "rtabmap"
 
+    if "scan_normalizer_node" in text:
+        return "scan_normalizer"
     if "dynamic_scan_filter_node" in text or "/lib/dynamic_scan_filter/" in text:
         return "dynamic_filter"
-    if "xgo_bridge_node" in text or "/lib/xgo_driver_bridge/" in text:
+    if "xgo_offline_odom_node" in text:
+        return "offline_odom"
+    if "waypoint_accuracy_node" in text:
+        return "waypoint_evaluator"
+    if "xgo_bridge_node" in text:
         return "xgo_bridge"
     if "ldlidar" in text:
         return "lidar"

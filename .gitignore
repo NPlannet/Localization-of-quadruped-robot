@@ -33,3 +33,6 @@ __pycache__/
 /robot_sim_sose/w1/
 /robot_sim_sose/maps/*.db
 /robot_sim_sose/evaluation_runs/
+
+
+/robot_sim_sose/evaluation

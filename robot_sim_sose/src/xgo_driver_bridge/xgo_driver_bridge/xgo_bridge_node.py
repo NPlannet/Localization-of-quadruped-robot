@@ -574,6 +574,15 @@ class XgoBridgeNode(Node):
 
         msg = BatteryState()
         msg.header.stamp = stamp.to_msg()
+        # read_battery() exposes percentage only. BatteryState specifies NaN
+        # for unavailable measurements; leaving these fields at their Python
+        # default of 0.0 would incorrectly imply measured zero values.
+        msg.voltage = math.nan
+        msg.temperature = math.nan
+        msg.current = math.nan
+        msg.charge = math.nan
+        msg.capacity = math.nan
+        msg.design_capacity = math.nan
         msg.percentage = self.clamp(battery_percent / 100.0, 0.0, 1.0)
         msg.present = True
         msg.power_supply_status = BatteryState.POWER_SUPPLY_STATUS_UNKNOWN

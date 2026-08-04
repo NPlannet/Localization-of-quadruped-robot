@@ -1,0 +1,29 @@
+/tf_static:
+  history: keep_last
+  depth: 10
+  reliability: reliable
+  durability: transient_local
+
+/scan:
+  history: keep_last
+  depth: 10
+  reliability: best_effort
+  durability: volatile
+
+/imu/data:
+  history: keep_last
+  depth: 50
+  reliability: best_effort
+  durability: volatile
+
+/xgo/applied_vel:
+  history: keep_last
+  depth: 50
+  reliability: reliable
+  durability: volatile
+
+/camera/image_raw/compressed:
+  history: keep_last
+  depth: 5
+  reliability: best_effort
+  durability: volatile

@@ -18,8 +18,9 @@ usage() {
 Usage:
   bash scripts/record_robot_run.sh <run_name>
 
-This attaches to an already-running robot bringup. It records a rosbag and
-CPU/RAM measurements, but does not launch, stop, or reconfigure any ROS node.
+This attaches to an already-running robot bringup. It records a rosbag,
+CPU/RAM measurements, and battery percentage, but does not launch, stop, or
+reconfigure any ROS node.
 
 Example:
   bash scripts/record_robot_run.sh slam_toolbox_filtered_run1
@@ -44,9 +45,11 @@ fi
 
 RUN_DIR=${OUTPUT_ROOT}/${RUN_NAME}
 RESOURCE_DIR=${RUN_DIR}/resources
+BATTERY_DIR=${RUN_DIR}/battery
 BAG_DIR=${RUN_DIR}/bag
 QOS_OVERRIDES=${WORKSPACE}/src/xgo_driver_bridge/config/bag_record_qos.yaml
 MONITOR_SCRIPT=${WORKSPACE}/scripts/monitor_robot_resources.py
+BATTERY_MONITOR_SCRIPT=${WORKSPACE}/scripts/monitor_robot_battery.py
 
 if [ -e "${RUN_DIR}" ]; then
   echo "Refusing to overwrite existing run directory: ${RUN_DIR}" >&2
@@ -70,14 +73,16 @@ EOF
   exit 1
 fi
 
-if [ ! -f "${MONITOR_SCRIPT}" ] || [ ! -f "${QOS_OVERRIDES}" ]; then
-  echo "Resource monitor or bag QoS configuration is missing." >&2
+if [ ! -f "${MONITOR_SCRIPT}" ] \
+    || [ ! -f "${BATTERY_MONITOR_SCRIPT}" ] \
+    || [ ! -f "${QOS_OVERRIDES}" ]; then
+  echo "Resource monitor, battery monitor, or bag QoS configuration is missing." >&2
   exit 1
 fi
 
 TOPIC_LIST=$(timeout 5 ros2 topic list 2>/dev/null || true)
 MISSING_TOPICS=()
-for topic in /scan /odom /imu/data /tf; do
+for topic in /scan /odom /imu/data /tf /battery_state; do
   if ! grep -qx "${topic}" <<<"${TOPIC_LIST}"; then
     MISSING_TOPICS+=("${topic}")
   fi
@@ -87,6 +92,12 @@ if [ "${#MISSING_TOPICS[@]}" -ne 0 ]; then
   printf 'The existing bringup is missing required topic(s):' >&2
   printf ' %s' "${MISSING_TOPICS[@]}" >&2
   printf '\nStart and verify robot_sensor_bringup.launch.py first.\n' >&2
+  exit 1
+fi
+
+if ! timeout 6 ros2 topic echo /battery_state --once >/dev/null 2>&1; then
+  echo "The /battery_state topic exists, but no battery message arrived." >&2
+  echo "Check xgo_driver_bridge and its serial connection before recording." >&2
   exit 1
 fi
 
@@ -113,6 +124,7 @@ timeout 10 ros2 topic list -t 2>/dev/null \
   printf 'mode=attach_to_existing_bringup\n'
   printf 'record_camera=%s\n' "${RECORD_CAMERA}"
   printf 'resource_interval_s=%s\n' "${RESOURCE_INTERVAL}"
+  printf 'battery_topic=/battery_state\n'
   printf 'ros_domain_id=%s\n' "${ROS_DOMAIN_ID:-unset}"
   printf 'started_at=%s\n' "$(date --iso-8601=seconds)"
   printf 'foxglove_detected=%s\n' "$(grep -q foxglove <<<"${NODE_LIST}" && echo true || echo false)"
@@ -134,6 +146,7 @@ for node in ${NODE_LIST}; do
 done
 
 MONITOR_PID=
+BATTERY_MONITOR_PID=
 CLEANED=false
 
 cleanup() {
@@ -146,6 +159,11 @@ cleanup() {
     kill -INT "${MONITOR_PID}" 2>/dev/null
     wait "${MONITOR_PID}" 2>/dev/null
   fi
+  if [ -n "${BATTERY_MONITOR_PID}" ] \
+      && kill -0 "${BATTERY_MONITOR_PID}" 2>/dev/null; then
+    kill -INT "${BATTERY_MONITOR_PID}" 2>/dev/null
+    wait "${BATTERY_MONITOR_PID}" 2>/dev/null
+  fi
 }
 trap cleanup EXIT INT TERM
 
@@ -154,6 +172,24 @@ python3 "${MONITOR_SCRIPT}" \
   --interval "${RESOURCE_INTERVAL}" \
   --label "${RUN_NAME}" &
 MONITOR_PID=$!
+
+python3 "${BATTERY_MONITOR_SCRIPT}" \
+  --output-dir "${BATTERY_DIR}" \
+  --topic /battery_state \
+  --label "${RUN_NAME}" &
+BATTERY_MONITOR_PID=$!
+
+sleep 1
+if ! kill -0 "${MONITOR_PID}" 2>/dev/null; then
+  echo "CPU/RAM monitor exited before recording started." >&2
+  cleanup
+  exit 1
+fi
+if ! kill -0 "${BATTERY_MONITOR_PID}" 2>/dev/null; then
+  echo "Battery monitor exited before recording started." >&2
+  cleanup
+  exit 1
+fi
 
 TOPICS=(
   /tf
@@ -208,8 +244,16 @@ if [ -d "${BAG_DIR}" ]; then
   ros2 bag info "${BAG_DIR}" > "${RUN_DIR}/bag_info.txt" 2>&1 || true
 fi
 
+if [ ! -s "${RESOURCE_DIR}/summary.json" ]; then
+  echo "WARNING: resource summary was not created." >&2
+fi
+if [ ! -s "${BATTERY_DIR}/summary.json" ]; then
+  echo "WARNING: battery summary was not created." >&2
+fi
+
 printf '\nRun saved to %s\n' "${RUN_DIR}"
 printf 'Resource summary: %s\n' "${RESOURCE_DIR}/summary.json"
+printf 'Battery summary: %s\n' "${BATTERY_DIR}/summary.json"
 printf 'Bag: %s\n' "${BAG_DIR}"
 printf 'Bag inventory: %s\n' "${RUN_DIR}/bag_info.txt"
 printf 'The existing robot bringup is still running.\n'

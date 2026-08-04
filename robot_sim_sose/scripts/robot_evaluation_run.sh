@@ -18,16 +18,17 @@ source_setup() {
 usage() {
   cat <<EOF
 Usage:
-  bash scripts/robot_evaluation_run.sh <slam_method> <scan_variant> <run_name>
+  bash scripts/robot_evaluation_run.sh <slam_method> <scan_variant> [run_tag]
 
 Arguments:
   slam_method   slam_toolbox, cartographer, or rtabmap
   scan_variant  raw or filtered
-  run_name      Unique output-directory name, for example:
-                slam_toolbox_filtered_run1
+  run_tag       Optional short label such as room1 or repeat_a. The script
+                always adds the algorithm, scan variant, and unique run number.
 
-The command starts the complete robot stack, resource monitoring, and rosbag
-recording. Walk the evaluation route, then press Ctrl+C once to stop and save.
+The command starts the complete robot stack, resource and battery monitoring,
+and rosbag recording. Walk the evaluation route, then press Ctrl+C once to stop
+and save.
 
 Optional environment variables:
   OUTPUT_ROOT=/workspaces/robot_sim_sose/evaluation/runs
@@ -37,17 +38,19 @@ Optional environment variables:
   RECORD_CAMERA=true|false
   START_FOXGLOVE=false
   WARMUP_SECONDS=5
+  RUN_TAG=room1              Alternative to the optional positional run_tag
 EOF
 }
 
-if [ "$#" -ne 3 ]; then
+if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
   usage
   exit 2
 fi
 
 SLAM_METHOD=$1
 SCAN_VARIANT=$2
-RUN_NAME=$3
+ENV_RUN_TAG=${RUN_TAG:-}
+RUN_TAG=${3:-${ENV_RUN_TAG}}
 
 case "${SLAM_METHOD}" in
   slam_toolbox|cartographer|rtabmap) ;;
@@ -74,8 +77,9 @@ case "${SCAN_VARIANT}" in
     ;;
 esac
 
-if [[ ! "${RUN_NAME}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
-  echo "run_name may only contain letters, numbers, dot, underscore, and dash." >&2
+if [ -n "${RUN_TAG}" ] \
+    && [[ ! "${RUN_TAG}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+  echo "run_tag may only contain letters, numbers, dot, underscore, and dash." >&2
   exit 2
 fi
 
@@ -86,17 +90,34 @@ else
 fi
 RECORD_CAMERA=${RECORD_CAMERA:-${START_CAMERA}}
 
-RUN_DIR=${OUTPUT_ROOT}/${RUN_NAME}
+RUN_BASE=live_${SLAM_METHOD}_${SCAN_VARIANT}
+if [ -n "${RUN_TAG}" ]; then
+  RUN_BASE=${RUN_BASE}_${RUN_TAG}
+fi
+
+allocate_run_directory() {
+  local index candidate
+  mkdir -p "${OUTPUT_ROOT}"
+  for index in $(seq 1 9999); do
+    candidate=$(printf '%s/%s_run%03d' "${OUTPUT_ROOT}" "${RUN_BASE}" "${index}")
+    if mkdir "${candidate}" 2>/dev/null; then
+      RUN_DIR=${candidate}
+      RUN_NAME=$(basename "${candidate}")
+      return 0
+    fi
+  done
+  echo "Could not allocate a unique run directory for ${RUN_BASE}." >&2
+  return 1
+}
+
+allocate_run_directory
 RESOURCE_DIR=${RUN_DIR}/resources
+BATTERY_DIR=${RUN_DIR}/battery
 BAG_DIR=${RUN_DIR}/bag
 LAUNCH_LOG=${RUN_DIR}/launch.log
 QOS_OVERRIDES=${WORKSPACE}/src/xgo_driver_bridge/config/bag_record_qos.yaml
 MONITOR_SCRIPT=${WORKSPACE}/scripts/monitor_robot_resources.py
-
-if [ -e "${RUN_DIR}" ]; then
-  echo "Refusing to overwrite existing run directory: ${RUN_DIR}" >&2
-  exit 1
-fi
+BATTERY_MONITOR_SCRIPT=${WORKSPACE}/scripts/monitor_robot_battery.py
 
 source_setup "/opt/ros/${ROS_DISTRO}/setup.bash"
 if [ -f "${WORKSPACE}/install/setup.bash" ]; then
@@ -116,10 +137,16 @@ EOF
   exit 1
 fi
 
+if [ ! -f "${MONITOR_SCRIPT}" ] || [ ! -f "${BATTERY_MONITOR_SCRIPT}" ]; then
+  echo "Resource or battery monitor script is missing." >&2
+  exit 1
+fi
+
 mkdir -p "${RESOURCE_DIR}"
 
 printf '%s\n' \
   "run_name=${RUN_NAME}" \
+  "run_tag=${RUN_TAG}" \
   "slam_method=${SLAM_METHOD}" \
   "scan_variant=${SCAN_VARIANT}" \
   "slam_scan_topic=${SLAM_SCAN_TOPIC}" \
@@ -129,12 +156,14 @@ printf '%s\n' \
   "start_foxglove=${START_FOXGLOVE}" \
   "enable_motion=${ENABLE_MOTION}" \
   "resource_interval_s=${RESOURCE_INTERVAL}" \
+  "battery_topic=/battery_state" \
   "ros_domain_id=${ROS_DOMAIN_ID:-unset}" \
   "started_at=$(date --iso-8601=seconds)" \
   > "${RUN_DIR}/run_config.txt"
 
 LAUNCH_PID=
 MONITOR_PID=
+BATTERY_MONITOR_PID=
 CLEANED=false
 
 cleanup() {
@@ -147,6 +176,11 @@ cleanup() {
   if [ -n "${MONITOR_PID}" ] && kill -0 "${MONITOR_PID}" 2>/dev/null; then
     kill -INT "${MONITOR_PID}" 2>/dev/null
     wait "${MONITOR_PID}" 2>/dev/null
+  fi
+  if [ -n "${BATTERY_MONITOR_PID}" ] \
+      && kill -0 "${BATTERY_MONITOR_PID}" 2>/dev/null; then
+    kill -INT "${BATTERY_MONITOR_PID}" 2>/dev/null
+    wait "${BATTERY_MONITOR_PID}" 2>/dev/null
   fi
   if [ -n "${LAUNCH_PID}" ] && kill -0 "${LAUNCH_PID}" 2>/dev/null; then
     kill -INT "${LAUNCH_PID}" 2>/dev/null
@@ -181,7 +215,8 @@ for _attempt in $(seq 1 45); do
   TOPIC_LIST=$(timeout 3 ros2 topic list 2>/dev/null || true)
   if grep -qx "/scan" <<<"${TOPIC_LIST}" \
       && grep -qx "/odom" <<<"${TOPIC_LIST}" \
-      && grep -qx "/imu/data" <<<"${TOPIC_LIST}"; then
+      && grep -qx "/imu/data" <<<"${TOPIC_LIST}" \
+      && grep -qx "/battery_state" <<<"${TOPIC_LIST}"; then
     if [ "${SCAN_VARIANT}" = "filtered" ] \
         && ! grep -qx "/scan_filtered" <<<"${TOPIC_LIST}"; then
       sleep 1
@@ -204,6 +239,12 @@ if [ "${READY}" != "true" ]; then
   exit 1
 fi
 
+if ! timeout 6 ros2 topic echo /battery_state --once >/dev/null 2>&1; then
+  echo "No /battery_state message arrived from the XGO bridge." >&2
+  tail -n 80 "${LAUNCH_LOG}" >&2
+  exit 1
+fi
+
 if [ "${WARMUP_SECONDS}" != "0" ]; then
   echo "Topics ready; allowing ${WARMUP_SECONDS}s for mapper warm-up..."
   sleep "${WARMUP_SECONDS}"
@@ -214,6 +255,24 @@ python3 "${MONITOR_SCRIPT}" \
   --interval "${RESOURCE_INTERVAL}" \
   --label "${RUN_NAME}" &
 MONITOR_PID=$!
+
+python3 "${BATTERY_MONITOR_SCRIPT}" \
+  --output-dir "${BATTERY_DIR}" \
+  --topic /battery_state \
+  --label "${RUN_NAME}" &
+BATTERY_MONITOR_PID=$!
+
+sleep 1
+if ! kill -0 "${MONITOR_PID}" 2>/dev/null; then
+  echo "CPU/RAM monitor exited before recording started." >&2
+  cleanup
+  exit 1
+fi
+if ! kill -0 "${BATTERY_MONITOR_PID}" 2>/dev/null; then
+  echo "Battery monitor exited before recording started." >&2
+  cleanup
+  exit 1
+fi
 
 TOPICS=(
   /tf
@@ -268,8 +327,16 @@ if [ -d "${BAG_DIR}" ]; then
   ros2 bag info "${BAG_DIR}" > "${RUN_DIR}/bag_info.txt" 2>&1 || true
 fi
 
+if [ ! -s "${RESOURCE_DIR}/summary.json" ]; then
+  echo "WARNING: resource summary was not created." >&2
+fi
+if [ ! -s "${BATTERY_DIR}/summary.json" ]; then
+  echo "WARNING: battery summary was not created." >&2
+fi
+
 printf '\nRun saved to %s\n' "${RUN_DIR}"
 printf 'Resource summary: %s\n' "${RESOURCE_DIR}/summary.json"
+printf 'Battery summary: %s\n' "${BATTERY_DIR}/summary.json"
 printf 'Bag: %s\n' "${BAG_DIR}"
 printf 'Bag inventory: %s\n' "${RUN_DIR}/bag_info.txt"
 printf 'Launch log: %s\n' "${LAUNCH_LOG}"

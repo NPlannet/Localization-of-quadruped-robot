@@ -29,7 +29,7 @@ Start with the guide matching your task:
 - [Architecture and package responsibilities](robot_sim_sose/docs/architecture.md)
 - [Gazebo simulation](robot_sim_sose/docs/simulation.md)
 - [Physical robot deployment](robot_sim_sose/docs/robot-deployment.md)
-- [Raspberry Pi host configuration](robot_sim_sose/docs/raspberry-pi-setup.md)
+- [Raspberry Pi host configuration](robot_sim_sose/docs/raspberry-pi- setup.md)
 - [Bag replay and evaluation](robot_sim_sose/docs/evaluation.md)
 
 ## Development Container
@@ -108,8 +108,8 @@ container:
 bash scripts/record_robot_run.sh sensor_only_run1
 ```
 
-Press `Ctrl+C` once to finalize the MCAP bag and resource summary. The existing
-robot bringup remains running. New runs are written under:
+Press `Ctrl+C` once to finalize the MCAP bag, CPU/RAM summary, and battery
+summary. The existing robot bringup remains running. New runs are written under:
 
 ```text
 robot_sim_sose/evaluation/runs/<run_name>/

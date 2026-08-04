@@ -19,11 +19,14 @@
   <exec_depend>cartographer_ros</exec_depend>
   <exec_depend>dynamic_scan_filter</exec_depend>
   <exec_depend>foxglove_bridge</exec_depend>
+  <exec_depend>image_transport</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>ldlidar_stl_ros2</exec_depend>
   <exec_depend>lifecycle_msgs</exec_depend>
   <exec_depend>rtabmap_slam</exec_depend>
+  <exec_depend>rtabmap_util</exec_depend>
+  <exec_depend>rosbag2_transport</exec_depend>
   <exec_depend>slam_toolbox</exec_depend>
 
   <export>

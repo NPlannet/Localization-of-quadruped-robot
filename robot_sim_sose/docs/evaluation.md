@@ -150,19 +150,135 @@ bash scripts/record_robot_run.sh sensor_only_run1
 ```
 
 This records `/scan`, `/scan_filtered`, `/cmd_vel`, `/imu/data`, `/odom`, TF,
-camera topics, and diagnostics while independently sampling CPU and RAM. Press
-`Ctrl+C` once to finalize the MCAP. It does not stop the existing bringup.
-Output is written to `evaluation/runs/<run_name>/`.
+`/battery_state`, camera topics, and diagnostics while independently sampling
+CPU, RAM, and battery percentage. Press `Ctrl+C` once to finalize the MCAP. It
+does not stop the existing bringup. Output is written to
+`evaluation/runs/<run_name>/`:
+
+```text
+<run_name>/
+├── bag/                 MCAP sensor and algorithm topics
+├── resources/
+│   ├── system.csv       Whole-system CPU, RAM, temperature, and frequency
+│   ├── processes.csv    Per-component CPU and resident memory
+│   └── summary.json
+├── battery/
+│   ├── samples.csv      Timestamped BatteryState values
+│   └── summary.json     Start/end percentage and observed discharge rate
+├── bag_info.txt
+├── ros_nodes.txt
+├── ros_topics.txt
+└── run_config.txt
+```
+
+The XGO SDK currently supplies battery percentage but not measured voltage or
+current. Consequently, this is a coarse state-of-charge comparison rather than
+an energy measurement in watt-hours. Use equal-duration trials with the same
+starting charge, route, gait, payload, camera/visualization settings, and idle
+warm-up. Short runs may show no percentage change because the controller value
+is quantized; longer repeated runs are more useful.
 
 For a controlled live mapper run that starts and owns the entire bringup:
 
 ```bash
-bash scripts/robot_evaluation_run.sh slam_toolbox filtered st_filtered_run1
-bash scripts/robot_evaluation_run.sh cartographer raw cart_raw_run1
-bash scripts/robot_evaluation_run.sh rtabmap filtered rtab_filtered_run1
+bash scripts/robot_evaluation_run.sh slam_toolbox filtered
+bash scripts/robot_evaluation_run.sh cartographer raw
+bash scripts/robot_evaluation_run.sh rtabmap filtered
+```
+
+Run directories are allocated automatically and never overwritten, for example
+`live_slam_toolbox_filtered_run001` followed by
+`live_slam_toolbox_filtered_run002`. Add an optional tag when separating rooms
+or protocols:
+
+```bash
+bash scripts/robot_evaluation_run.sh cartographer raw room2
 ```
 
 Run at least three trials per condition, use the same route and speed, start
 with an empty/independent map or database, and avoid running RViz/Foxglove when
 measuring feasibility on the Raspberry Pi unless visualization overhead is
 explicitly part of the test.
+
+
+## IMPORTANT : Benchmark recorded bags on the Raspberry Pi
+
+The robot benchmark uses only `xgo_driver_bridge` and the installed mapping
+packages; it does not build or install `xgo_description`, Gazebo, or RViz.
+
+```bash
+# SLAM Toolbox, recomputing odometry and filtering from original inputs
+bash scripts/robot_bag_benchmark.sh \
+  slam_toolbox filtered \
+  evaluation/datasets/my_run/bag \
+  evaluation/datasets/my_run/waypoints.json
+
+# Cartographer, raw scan
+bash scripts/robot_bag_benchmark.sh \
+  cartographer raw \
+  evaluation/datasets/my_run/bag \
+  evaluation/datasets/my_run/waypoints.json
+
+# RTAB-Map with RGB appearance recognition
+bash scripts/robot_bag_benchmark.sh \
+  rtabmap filtered \
+  evaluation/datasets/my_run/bag \
+  evaluation/datasets/my_run/waypoints.json
+```
+
+Omit the final waypoint argument for compute-only runs. RTAB-Map uses the
+camera by default; set `USE_CAMERA=false` to measure its LiDAR-only variant.
+Legacy W1 scans require the normalizer:
+
+```bash
+NORMALIZE_SCAN=true bash scripts/robot_bag_benchmark.sh \
+  cartographer raw evaluation/datasets/w1/bag \
+  evaluation/datasets/w1/waypoints.json
+```
+
+Benchmark directories follow the same collision-safe convention, such as
+`bag_cartographer_raw_run001`. Set `RUN_TAG=room2` to obtain names such as
+`bag_cartographer_raw_room2_run001`.
+
+The player uses an explicit input allowlist:
+
+```text
+/scan
+/imu/data
+/xgo/applied_vel
+/tf_static
+/camera/image_raw/compressed    # RTAB-Map RGB only
+```
+
+Recorded `/odom`, `/tf`, `/scan_filtered`, `/map`, and mapper diagnostics are
+never replayed. `/odom` and `odom -> base_link` are rebuilt from the recorded
+applied velocity and IMU, and a selected filtered run always executes the
+current dynamic filter on the raw `/scan`. Keep the original bag unchanged;
+there is no need to create a second bag with topics deleted.
+
+New benchmark results are written to `evaluation/runs/<run_name>/`, including
+the input bag inventory, exact configuration, launch log, component/system
+resource samples, RTAB-Map database where applicable, and waypoint metrics
+when a sidecar was supplied.
+
+### Foxglove during CPU trials
+
+Headless operation is the default and should be used for the primary compute
+comparison. To inspect a separately labelled visual run:
+
+```bash
+RUN_TAG=visual START_FOXGLOVE=true bash scripts/robot_bag_benchmark.sh \
+  slam_toolbox filtered /path/to/bag
+```
+
+Connect Lichtblick to `ws://<robot-ip>:8766`. Enabling the bridge for every run
+is a valid end-to-end system comparison, but it is not a pure mapper comparison:
+network serialization depends on map size, diagnostics, and camera traffic, so
+the overhead need not be identical across algorithms. Do not mix headless and
+Foxglove-enabled trials in one aggregate.
+
+The benchmark does not replay the historical battery topic because that would
+describe the original walk, not current Pi consumption. It also does not start
+the live XGO bridge, since that would create conflicting IMU and odometry
+publishers. True replay-energy measurement requires an external Pi power meter;
+CPU, RAM, temperature, and frequency are measured directly by the script.

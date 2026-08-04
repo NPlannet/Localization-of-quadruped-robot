@@ -169,7 +169,7 @@ ros2 topic hz /camera/image_raw/compressed
 ros2 topic echo /camera/camera_info --once
 ```
 
-## Record runs and CPU use
+## Record runs, CPU use, and battery
 
 When bringup is already running, attach the standalone recorder:
 
@@ -180,12 +180,13 @@ bash scripts/record_robot_run.sh sensor_only_run1
 For a script-owned mapper trial:
 
 ```bash
-bash scripts/robot_evaluation_run.sh cartographer filtered cart_filtered_run1
+bash scripts/robot_evaluation_run.sh cartographer filtered
 ```
 
-Press `Ctrl+C` once to finalize the MCAP and resource summary. Results are under
-`evaluation/runs/<run_name>/`. See [`evaluation.md`](evaluation.md) for the
-recorded topics and experimental protocol.
+Press `Ctrl+C` once to finalize the MCAP, CPU/RAM summary, and battery summary.
+Results are under `evaluation/runs/<run_name>/`. See
+[`evaluation.md`](evaluation.md) for the recorded topics and experimental
+protocol.
 
 Copy a run to the laptop from the laptop shell:
 
@@ -205,6 +206,14 @@ bash scripts/robot_stack.sh save-map
 The default output is `evaluation/results/live/maps/xgo_map.{yaml,pgm}`. A map
 saver timeout usually means `/map` is absent, uses incompatible QoS, or the
 mapper/occupancy-grid publisher has already stopped.
+
+## Headless bag benchmarks
+
+Use `scripts/robot_bag_benchmark.sh` to replay a recorded run through a fresh
+SLAM pipeline on the Raspberry Pi without installing Gazebo. The script starts
+resource monitoring, excludes recorded derived topics, and exits automatically
+after playback. See [`evaluation.md`](evaluation.md#benchmark-recorded-bags-on-the-raspberry-pi)
+for commands and the Foxglove trade-off.
 
 ## Common failures
 
