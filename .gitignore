@@ -36,3 +36,4 @@ __pycache__/
 
 
 /robot_sim_sose/evaluation
+/robot_sim_sose/evaluation/rtab_filtered_run_wp_3

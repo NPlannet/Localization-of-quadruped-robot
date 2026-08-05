@@ -83,8 +83,6 @@ def classify_process(command: str, comm: str) -> str | None:
 
     if "monitor_robot_resources.py" in text:
         return None
-    if "robot_evaluation_run.sh" in text:
-        return "evaluation_runner"
     if (
         "ros2 bag play" in text
         or "/rosbag2_transport/play" in text

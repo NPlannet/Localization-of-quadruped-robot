@@ -52,7 +52,7 @@ slam_scan_topic:=/scan , /scan_filtered
 ```bash
 # Cartographer with raw LiDAR, external odometry, and IMU
 ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
-  enable_motion:=true slam_method:=cartographer slam_scan_topic:=/scan
+  enable_motion:=true slam_method:=cartographer slam_scan_topic:=/scan_filtered
 
 # RTAB-Map with filtered LiDAR and RGB loop recognition
 ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
@@ -76,20 +76,87 @@ Use `/scan` for a raw trial. Use `/scan_filtered` only when
 When bringup is already running, attach the standalone recorder:
 
 ```bash
-bash scripts/record_robot_run.sh sensor_only_run1
+bash scripts/record_robot_run.sh rtab_filtered_run_wp_1
 ```
 
 Press `Ctrl+C` once to finalize the MCAP, CPU/RAM summary, and battery summary.
 
 
 
-
 ## Copy a run to the laptop from the laptop shell:
 
 ```bash
-scp -r pi@robodoge1.local:~/robot_sim_sose/evaluation/runs/sensor_only_run1 \
+scp -r pi@robodoge1.local:~/robot_sim_sose/evaluation/runs/rtab_filtered_run_wp_3 \
   robot_sim_sose/evaluation/runs/
 ```
+
+
+##  Prepare Waypoints.JSON
+before you can use the recorded bag for testing , you have to label the timestamps that were recorded under /ground_truth/waypoint
+For that you have to log into the robot and run 
+
+Terminal 1
+```bash
+ros2 topic echo \
+  /ground_truth/waypoint \
+  std_msgs/msg/String \
+  --field data \
+  | tee /workspaces/robot_sim_sose/evaluation/runs/rtab_filtered_run_wp_1/waypoint_timestamps.txt
+```
+creates a txt file containing the timestamps of the waypoints
+  Terminal 2
+```bash
+  ros2 bag play \
+  /workspaces/robot_sim_sose/evaluation/runs/rtab_filtered_run_wp_1/bag \
+  --topics /ground_truth/waypoint \
+  --rate 100
+```
+
+
+Then you can paste the txt file content together with the context below 
+into e.g Chat GPT and create a waypoints.json file in the folder of the run ,
+e.g evaluation/run/rtab_filtered/
+
+Context(change order of visited waypoints):
+Visited waypoints in order: (e.g 1,2,3,4,5,5,4,3,2,1)
+JSON FILE FORMAT
+{
+  "topic": "/ground_truth/waypoint",
+  "frame": "map",
+  "marks": [
+    {
+      "stamp_ns": 1785415036091702448,
+      "index": 0,
+      "label": "1",
+      "x": 0.0,
+      "y": 0.0
+    },
+    {
+      "stamp_ns": 1785415051234567890,
+      "index": 1,
+      "label": "2",
+      "x": 1.0,
+      "y": 0.0
+    }
+  ]
+}
+Coordinates for all Waypoints
+
+{"stamp_ns": t,       "index": n,"label": "1","x": 0.0,"y": 0.0}
+{"stamp_ns": t,       "index": n,"label": "2","x": 0.0,"y": 1.0}      
+{"stamp_ns": t,       "index": n,"label": "3","x": 0.0,"y": 2.0}
+{"stamp_ns": t,       "index": n,"label": "4","x": -1.0,"y": 0.0}
+{"stamp_ns": t,       "index": n,"label": "5","x": -1.0,"y": 1.0}
+{"stamp_ns": t,       "index": n,"label": "6","x": -1.0,"y": 2.0}
+{"stamp_ns": t,       "index": n,"label": "7","x": -2.0,"y": 0.0}
+{"stamp_ns": t,       "index": n,"label": "8","x": -2.0,"y": 1.0}
+{"stamp_ns": t,       "index": n,"label": "9","x": -2.0,"y": 2.0}    
+{"stamp_ns": t,       "index": n,"label": "10","x": -3.0,"y": 0.0}
+{"stamp_ns": t,       "index": n,"label": "11","x": -3.0,"y": 1.0}
+{"stamp_ns": t,       "index": n,"label": "12","x": -3.0,"y": 2.0}
+{"stamp_ns": t,       "index": n,"label": "13","x": -4.0,"y": 0.0}
+{"stamp_ns": t,       "index": n,"label": "14","x": -4.0,"y": 1.0}
+{"stamp_ns": t,       "index": n,"label": "15","x": -4.0,"y": 2.0}
 
 
 
@@ -98,7 +165,7 @@ scp -r pi@robodoge1.local:~/robot_sim_sose/evaluation/runs/sensor_only_run1 \
 `scripts/robot_bag_benchmark.sh`
 
 Use `scripts/robot_bag_benchmark.sh` to replay a recorded run through a fresh
-SLAM pipeline on the Raspberry Pi without installing Gazebo. The script starts
+SLAM pipeline on the Raspberry Pi. The script starts
 resource monitoring, excludes recorded derived topics, and exits automatically
 after playback. See [`evaluation.md`](evaluation.md#benchmark-recorded-bags-on-the-raspberry-pi)
 for commands and the Foxglove trade-off.

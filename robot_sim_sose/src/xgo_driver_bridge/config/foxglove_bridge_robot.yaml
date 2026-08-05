@@ -12,6 +12,8 @@ foxglove_bridge:
       - "^/imu/data$"
       - "^/battery_state$"
       - "^/cmd_vel$"
+      - "^/ground_truth/waypoint_trigger$"
+      - "^/ground_truth/waypoint$"
       - "^/xgo/applied_vel$"
       - "^/xgo/yaw_deg$"
       - "^/scan$"

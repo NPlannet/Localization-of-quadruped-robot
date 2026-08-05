@@ -42,6 +42,7 @@ RSYNC_PATHS=(
   ./docs/raspberry-pi-setup.md
   ./.devcontainer/Dockerfile.robot
   ./scripts/
+  ./evaluation/templates/benchmark_matrix.example.yaml
   ./src/xgo_driver_bridge/
   ./src/dynamic_scan_filter/
   ./src/nav2_wavefront_frontier_exploration/

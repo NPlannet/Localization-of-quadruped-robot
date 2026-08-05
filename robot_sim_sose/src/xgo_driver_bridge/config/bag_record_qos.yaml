@@ -34,6 +34,12 @@
   reliability: reliable
   durability: volatile
 
+/ground_truth/waypoint:
+  history: keep_last
+  depth: 10
+  reliability: reliable
+  durability: volatile
+
 /tf_static:
   history: keep_last
   depth: 10

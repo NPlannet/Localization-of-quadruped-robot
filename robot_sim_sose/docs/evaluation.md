@@ -150,9 +150,9 @@ bash scripts/record_robot_run.sh sensor_only_run1
 ```
 
 This records `/scan`, `/scan_filtered`, `/cmd_vel`, `/imu/data`, `/odom`, TF,
-`/battery_state`, camera topics, and diagnostics while independently sampling
-CPU, RAM, and battery percentage. Press `Ctrl+C` once to finalize the MCAP. It
-does not stop the existing bringup. Output is written to
+`/battery_state`, `/ground_truth/waypoint`, camera topics, and diagnostics while
+independently sampling CPU, RAM, and battery percentage. Press `Ctrl+C` once to
+finalize the MCAP. It does not stop the existing bringup. Output is written to
 `evaluation/runs/<run_name>/`:
 
 ```text
@@ -171,29 +171,43 @@ does not stop the existing bringup. Output is written to
 └── run_config.txt
 ```
 
+### Mark surveyed waypoints while recording
+
+The normal robot bringup starts a small waypoint timestamp node. In Lichtblick,
+add a **Publish** panel and configure one button as follows:
+
+- Topic: `/ground_truth/waypoint_trigger`
+- Message type: `std_msgs/msg/Empty`
+- Message: `{}`
+- Button label: `Mark waypoint`
+
+Click the button once whenever the robot is stationary on a surveyed waypoint.
+The node reads the robot's ROS clock at that instant and publishes a
+`std_msgs/msg/String` on `/ground_truth/waypoint`, for example:
+
+```text
+data: '{"stamp_ns":1785415036091702448}'
+```
+
+The bag recording scripts already include `/ground_truth/waypoint`. Later, copy
+each `stamp_ns` into `waypoints.json` and add the known `x`, `y`, and label. You
+can verify the button before recording with:
+
+```bash
+ros2 topic echo /ground_truth/waypoint
+```
+
+Using a trigger is intentional: a static Lichtblick message cannot insert the
+robot's current ROS timestamp reliably, especially if Lichtblick runs on a
+different computer. The marker node assigns the timestamp in the same clock
+domain as the recorded sensor data.
+
 The XGO SDK currently supplies battery percentage but not measured voltage or
 current. Consequently, this is a coarse state-of-charge comparison rather than
 an energy measurement in watt-hours. Use equal-duration trials with the same
 starting charge, route, gait, payload, camera/visualization settings, and idle
 warm-up. Short runs may show no percentage change because the controller value
 is quantized; longer repeated runs are more useful.
-
-For a controlled live mapper run that starts and owns the entire bringup:
-
-```bash
-bash scripts/robot_evaluation_run.sh slam_toolbox filtered
-bash scripts/robot_evaluation_run.sh cartographer raw
-bash scripts/robot_evaluation_run.sh rtabmap filtered
-```
-
-Run directories are allocated automatically and never overwritten, for example
-`live_slam_toolbox_filtered_run001` followed by
-`live_slam_toolbox_filtered_run002`. Add an optional tag when separating rooms
-or protocols:
-
-```bash
-bash scripts/robot_evaluation_run.sh cartographer raw room2
-```
 
 Run at least three trials per condition, use the same route and speed, start
 with an empty/independent map or database, and avoid running RViz/Foxglove when
@@ -236,9 +250,9 @@ NORMALIZE_SCAN=true bash scripts/robot_bag_benchmark.sh \
   evaluation/datasets/w1/waypoints.json
 ```
 
-Benchmark directories follow the same collision-safe convention, such as
-`bag_cartographer_raw_run001`. Set `RUN_TAG=room2` to obtain names such as
-`bag_cartographer_raw_room2_run001`.
+Benchmark directories follow a collision-safe convention that includes the
+source recording, such as `bag_cartographer_raw_my_run_run001`. Set
+`RUN_TAG=room2` to add another label before the unique run number.
 
 The player uses an explicit input allowlist:
 
@@ -260,6 +274,71 @@ New benchmark results are written to `evaluation/runs/<run_name>/`, including
 the input bag inventory, exact configuration, launch log, component/system
 resource samples, RTAB-Map database where applicable, and waypoint metrics
 when a sidecar was supplied.
+
+### Run the complete benchmark matrix
+
+The matrix runner executes every configured algorithm and scan variant for one
+bag, checkpoints after every job, and can resume after `Ctrl+C` or a reboot.
+Copy the template and edit the experiment name, bag path, and waypoint path:
+
+```bash
+cp evaluation/templates/benchmark_matrix.example.yaml \
+  evaluation/benchmark_matrix.yaml
+nano evaluation/benchmark_matrix.yaml
+```
+
+Preview the order without creating results:
+
+```bash
+python3 scripts/run_benchmark_matrix.py \
+  evaluation/benchmark_matrix.yaml --dry-run
+```
+
+Start the matrix. Repeating the same command resumes pending or interrupted
+jobs and skips completed jobs:
+
+```bash
+python3 scripts/run_benchmark_matrix.py evaluation/benchmark_matrix.yaml
+```
+
+Inspect progress or explicitly retry failed jobs:
+
+```bash
+python3 scripts/run_benchmark_matrix.py \
+  evaluation/benchmark_matrix.yaml --status
+python3 scripts/run_benchmark_matrix.py \
+  evaluation/benchmark_matrix.yaml --retry-failed
+```
+
+The default example creates 30 jobs: three algorithms, raw and filtered scans,
+and five repetitions. Conditions are shuffled within each repetition using the
+saved random seed. A temperature gate and cooldown reduce systematic thermal
+bias, while Foxglove remains disabled for comparable CPU measurements.
+
+Matrix outputs use this hierarchy:
+
+```text
+evaluation/results/<experiment>/
+├── experiment.yaml
+├── experiment_metadata.yaml
+├── configuration_snapshot/
+├── state.yaml
+├── summary.csv                 Per-run measurements and status
+├── aggregate_summary.csv       Mean and standard deviation per condition
+├── runner.log
+└── bags/<bag>/<algorithm>/<raw-or-filtered>/<unique-run>/
+    ├── metrics/waypoint_accuracy.json
+    ├── resources/summary.json
+    ├── resources/system.csv
+    ├── resources/processes.csv
+    ├── run_config.txt
+    └── launch.log
+```
+
+Do not change a matrix YAML after its state file has been created. Use a new
+`experiment.name` for a changed protocol; this prevents accidentally combining
+results produced with different settings. The runner records the Git state and
+copies the relevant mapping configurations once per experiment.
 
 ### Foxglove during CPU trials
 

@@ -161,12 +161,6 @@ When bringup is already running, attach the standalone recorder:
 bash scripts/record_robot_run.sh sensor_only_run1
 ```
 
-For a script-owned mapper trial:
-
-```bash
-bash scripts/robot_evaluation_run.sh cartographer filtered
-```
-
 Press `Ctrl+C` once to finalize the MCAP, CPU/RAM summary, and battery summary.
 Results are under `evaluation/runs/<run_name>/`
 

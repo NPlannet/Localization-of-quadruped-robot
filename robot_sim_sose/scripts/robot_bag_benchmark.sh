@@ -97,6 +97,18 @@ if [ ! -f "${BAG_PATH}/metadata.yaml" ]; then
 fi
 BAG_PATH=$(realpath "${BAG_PATH}")
 
+# Rosbag directories produced by the robot recorder are usually named bag or
+# bag_0. Use their uniquely named parent run directory in the benchmark name so
+# results remain traceable to the source recording.
+SOURCE_BAG_NAME=$(basename "${BAG_PATH}")
+if [[ "${SOURCE_BAG_NAME}" = "bag" || "${SOURCE_BAG_NAME}" = bag_* ]]; then
+  SOURCE_BAG_NAME=$(basename "$(dirname "${BAG_PATH}")")
+fi
+SOURCE_BAG_NAME=$(sed -E 's/[^A-Za-z0-9._-]+/_/g' <<<"${SOURCE_BAG_NAME}")
+if [ -z "${SOURCE_BAG_NAME}" ]; then
+  SOURCE_BAG_NAME=unnamed_bag
+fi
+
 USE_WAYPOINT_EVALUATOR=false
 if [ -n "${WAYPOINTS_FILE}" ]; then
   if [ ! -f "${WAYPOINTS_FILE}" ]; then
@@ -107,7 +119,7 @@ if [ -n "${WAYPOINTS_FILE}" ]; then
   USE_WAYPOINT_EVALUATOR=true
 fi
 
-RUN_BASE=bag_${SLAM_METHOD}_${SCAN_VARIANT}
+RUN_BASE=bag_${SLAM_METHOD}_${SCAN_VARIANT}_${SOURCE_BAG_NAME}
 if [ -n "${RUN_TAG}" ]; then
   RUN_BASE=${RUN_BASE}_${RUN_TAG}
 fi
@@ -202,6 +214,7 @@ printf '%s\n' \
   "playback_rate=${PLAYBACK_RATE}" \
   "post_playback_delay_sec=${POST_PLAYBACK_DELAY_SEC}" \
   "bag_path=${BAG_PATH}" \
+  "source_bag_name=${SOURCE_BAG_NAME}" \
   "replayed_topics=${REQUIRED_TOPICS[*]}" \
   "recorded_derived_topics_replayed=false" \
   "use_waypoint_evaluator=${USE_WAYPOINT_EVALUATOR}" \

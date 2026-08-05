@@ -188,6 +188,17 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('start_foxglove')),
     )
 
+    waypoint_marker = Node(
+        package='xgo_driver_bridge',
+        executable='waypoint_marker_node',
+        name='waypoint_marker',
+        output='screen',
+        parameters=[
+            {'use_sim_time': bool_parameter('use_sim_time')},
+        ],
+        condition=IfCondition(LaunchConfiguration('start_waypoint_marker')),
+    )
+
     slam_toolbox = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -312,6 +323,13 @@ def generate_launch_description():
             'start_foxglove',
             default_value='true',
             description='Expose evaluation topics to Lichtblick over WebSocket.',
+        ),
+        DeclareLaunchArgument(
+            'start_waypoint_marker',
+            default_value='true',
+            description=(
+                'Timestamp Lichtblick waypoint button presses with the robot ROS clock.'
+            ),
         ),
         DeclareLaunchArgument(
             'use_sim_time',
@@ -466,6 +484,7 @@ def generate_launch_description():
         camera_transform,
         dynamic_filter,
         foxglove_bridge,
+        waypoint_marker,
         slam_toolbox,
         cartographer,
         rtabmap,

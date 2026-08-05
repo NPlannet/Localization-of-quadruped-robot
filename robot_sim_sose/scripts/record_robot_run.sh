@@ -203,6 +203,7 @@ TOPICS=(
   /scan
   /scan_filtered
   /battery_state
+  /ground_truth/waypoint
   /map
   /map_metadata
   /rosout
