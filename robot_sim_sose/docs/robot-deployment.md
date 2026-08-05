@@ -4,17 +4,13 @@ The physical robot uses a privileged, host-networked ROS 2 Jazzy container.
 Host UART, camera, and timing prerequisites are listed separately in
 [`raspberry-pi-setup.md`](raspberry-pi-setup.md).
 
-## Sync from the laptop
+## Sync Files from the laptop
 
 From `robot_sim_sose/`:
 
 ```bash
 bash scripts/sync_robot_runtime.sh pi@robodoge1.local
 ```
-
-The sync deliberately copies runtime source/configuration, scripts, Docker
-files, and robot documentation. It does not copy bags, evaluation results, or
-colcon build products.
 
 ## Build and enter the container
 
@@ -44,25 +40,16 @@ Bridge. No SLAM method is selected by default. `enable_motion` permits the
 bridge to apply `/cmd_vel`; the launch itself does not command movement.
 
 
-For a compute-oriented sensor run without camera or visualization:
-
-```bash
-ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
-  enable_motion:=true start_camera:=false start_foxglove:=false \
-  start_dynamic_filter:=false slam_method:=none
-```
-
-
 ## Select a mapper
 
 The same bringup can start any supported mapper:
 
 ```bash
-# SLAM Toolbox with filtered LiDAR
-ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
-  enable_motion:=true slam_method:=slam_toolbox \
-  slam_scan_topic:=/scan_filtered
+slam_method:= slam_toolbox , cartographer , rtabmap
+slam_scan_topic:=/scan , /scan_filtered
+```
 
+```bash
 # Cartographer with raw LiDAR, external odometry, and IMU
 ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
   enable_motion:=true slam_method:=cartographer slam_scan_topic:=/scan
@@ -72,28 +59,49 @@ ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
   enable_motion:=true slam_method:=rtabmap \
   slam_scan_topic:=/scan_filtered rtabmap_use_camera:=true \
   rtabmap_delete_database_on_start:=true
+
+# For a compute-oriented sensor run without camera or visualization:
+
+ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
+  enable_motion:=true start_camera:=false start_foxglove:=false \
+  start_dynamic_filter:=false slam_method:=none
 ```
 
 Use `/scan` for a raw trial. Use `/scan_filtered` only when
-`start_dynamic_filter:=true`. Live mapper configuration belongs in
-`src/xgo_driver_bridge/config/`; similarly named files in `xgo_description`
-are for simulation or replay.
+`start_dynamic_filter:=true`.
 
 
-## What the XGO bridge publishes
+## Record runs, CPU use, and battery
 
-The Mini2 controller is opened through the official Python `xgolib` on
-`/dev/ttyAMA0`. The bridge reads pitch, roll, and yaw orientation registers
-rather than relying on the controller's incomplete auto-feedback frames. It
-publishes:
+When bringup is already running, attach the standalone recorder:
 
-- `/imu/data`: orientation quaternion derived from those angles;
-- `/xgo/yaw_deg`: diagnostic heading;
-- `/xgo/applied_vel`: velocity actually accepted by the bridge;
-- `/odom` and `odom -> base_link`: position integrated from applied velocity,
-  with orientation corrected from the controller reading;
-- `/battery_state`; and
-- optional `/cmd_vel` motion control.
+```bash
+bash scripts/record_robot_run.sh sensor_only_run1
+```
+
+Press `Ctrl+C` once to finalize the MCAP, CPU/RAM summary, and battery summary.
+
+
+
+
+## Copy a run to the laptop from the laptop shell:
+
+```bash
+scp -r pi@robodoge1.local:~/robot_sim_sose/evaluation/runs/sensor_only_run1 \
+  robot_sim_sose/evaluation/runs/
+```
+
+
+
+## Headless bag benchmarks on Raspberry PI
+
+`scripts/robot_bag_benchmark.sh`
+
+Use `scripts/robot_bag_benchmark.sh` to replay a recorded run through a fresh
+SLAM pipeline on the Raspberry Pi without installing Gazebo. The script starts
+resource monitoring, excludes recorded derived topics, and exits automatically
+after playback. See [`evaluation.md`](evaluation.md#benchmark-recorded-bags-on-the-raspberry-pi)
+for commands and the Foxglove trade-off.
 
 
 
@@ -106,32 +114,6 @@ Lichtblick using:
 ws://<robot-ip>:8766
 ```
 
-## Record runs, CPU use, and battery
-
-When bringup is already running, attach the standalone recorder:
-
-```bash
-bash scripts/record_robot_run.sh sensor_only_run1
-```
-
-For a script-owned mapper trial:
-
-```bash
-bash scripts/robot_evaluation_run.sh cartographer filtered
-```
-
-Press `Ctrl+C` once to finalize the MCAP, CPU/RAM summary, and battery summary.
-Results are under `evaluation/runs/<run_name>/`
-
-
-Copy a run to the laptop from the laptop shell:
-
-```bash
-scp -r pi@robodoge1.local:~/robot_sim_sose/evaluation/runs/sensor_only_run1 \
-  robot_sim_sose/evaluation/runs/
-```
-
-
 ## Save a map
 
 While `/map` is actively being published:
@@ -143,27 +125,6 @@ bash scripts/robot_stack.sh save-map
 The default output is `evaluation/results/live/maps/xgo_map.{yaml,pgm}`. A map
 saver timeout usually means `/map` is absent, uses incompatible QoS, or the
 mapper/occupancy-grid publisher has already stopped.
-
-
-
-
-
-
-## Headless bag benchmarks
-
-`scripts/robot_bag_benchmark.sh`
-
-Use `scripts/robot_bag_benchmark.sh` to replay a recorded run through a fresh
-SLAM pipeline on the Raspberry Pi without installing Gazebo. The script starts
-resource monitoring, excludes recorded derived topics, and exits automatically
-after playback. See [`evaluation.md`](evaluation.md#benchmark-recorded-bags-on-the-raspberry-pi)
-for commands and the Foxglove trade-off.
-
-
-
-
-
-
 
 
 
