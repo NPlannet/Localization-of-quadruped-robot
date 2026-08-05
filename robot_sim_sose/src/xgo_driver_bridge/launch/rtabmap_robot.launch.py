@@ -1,11 +1,38 @@
 import os
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, LogInfo, OpaqueFunction
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
+
+
+def prepare_database_directory(context):
+    database_path = os.path.abspath(
+        os.path.expanduser(
+            LaunchConfiguration('database_path').perform(context)
+        )
+    )
+    database_directory = os.path.dirname(database_path)
+
+    try:
+        os.makedirs(database_directory, exist_ok=True)
+    except OSError as exc:
+        raise RuntimeError(
+            'Cannot create the RTAB-Map database directory '
+            f'{database_directory!r}: {exc}'
+        ) from exc
+
+    if not os.access(database_directory, os.W_OK):
+        raise RuntimeError(
+            'RTAB-Map database directory is not writable: '
+            f'{database_directory}'
+        )
+
+    return [
+        LogInfo(msg=f'RTAB-Map database: {database_path}'),
+    ]
 
 
 def generate_launch_description():
@@ -134,6 +161,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument('detection_rate', default_value='2.0'),
         DeclareLaunchArgument('visual_loop_threshold', default_value='0.11'),
+        OpaqueFunction(function=prepare_database_directory),
         preserve_database,
         reset_database,
     ])

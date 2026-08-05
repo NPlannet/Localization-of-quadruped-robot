@@ -29,6 +29,10 @@ bash scripts/robot_build_workspace.sh
 ```
 
 
+The source workspace is bind-mounted from the host. File edits survive
+container removal. Packages installed interactively with `apt` survive a stop
+and restart of the same container, but are lost when it is recreated.
+
 ## Unified sensor bringup
 
 Inside the container:
@@ -43,6 +47,12 @@ Defaults start the XGO bridge, LD19, camera, dynamic filter, and Foxglove
 Bridge. No SLAM method is selected by default. `enable_motion` permits the
 bridge to apply `/cmd_vel`; the launch itself does not command movement.
 
+For deliberate teleoperation without mapping:
+
+```bash
+ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
+  enable_motion:=true slam_method:=none
+```
 
 For a compute-oriented sensor run without camera or visualization:
 
@@ -79,6 +89,10 @@ Use `/scan` for a raw trial. Use `/scan_filtered` only when
 `src/xgo_driver_bridge/config/`; similarly named files in `xgo_description`
 are for simulation or replay.
 
+Cartographer uses `/odom` as a local motion prior and `/imu/data` for angular
+orientation/rate constraints according to its Lua configuration. RTAB-Map can
+use images for visual place recognition, but still needs valid camera
+calibration and synchronized image/CameraInfo messages.
 
 ## What the XGO bridge publishes
 
@@ -95,7 +109,30 @@ publishes:
 - `/battery_state`; and
 - optional `/cmd_vel` motion control.
 
+This is command-integrated odometry, not measured leg/wheel displacement. Slip,
+foot impacts, uncommanded motion, and translation while carried are not directly
+observed. SLAM scan matching corrects some accumulated error through
+`map -> odom`; it does not turn `/odom` into ground truth.
 
+## Verify before walking
+
+```bash
+bash scripts/robot_stack.sh check
+ros2 topic hz /scan
+ros2 topic hz /imu/data
+ros2 topic echo /odom --once
+ros2 run tf2_ros tf2_echo odom base_link
+ros2 topic info /cmd_vel -v
+```
+
+Rotate the robot and confirm that yaw changes smoothly and in the expected
+direction. Then issue a stop and, only with space around the robot, the provided
+very slow motion test:
+
+```bash
+bash scripts/robot_stack.sh stop
+bash scripts/robot_stack.sh tiny-forward
+```
 
 ## Lichtblick/Foxglove connection
 
@@ -105,6 +142,16 @@ Lichtblick using:
 ```text
 ws://<robot-ip>:8766
 ```
+
+The allowlist in `src/xgo_driver_bridge/config/foxglove_bridge_robot.yaml`
+limits published/control topics, including `/cmd_vel`. Use a distinct ROS
+domain and robot IP to avoid connecting teleoperation panels to another robot.
+
+For the camera panel, select `/camera/image_raw/compressed` as the image and
+`/camera/camera_info` as calibration. A missing calibration YAML warning from
+camera_ros does not by itself prevent images; the node should still publish a
+CameraInfo message with the configured 640x480 dimensions. “Invalid image size
+0x0” means Lichtblick has not received a matching CameraInfo message. 
 
 ## Record runs, CPU use, and battery
 
@@ -146,28 +193,13 @@ mapper/occupancy-grid publisher has already stopped.
 
 
 
-
-
-
 ## Headless bag benchmarks
-
-`scripts/robot_bag_benchmark.sh`
 
 Use `scripts/robot_bag_benchmark.sh` to replay a recorded run through a fresh
 SLAM pipeline on the Raspberry Pi without installing Gazebo. The script starts
 resource monitoring, excludes recorded derived topics, and exits automatically
 after playback. See [`evaluation.md`](evaluation.md#benchmark-recorded-bags-on-the-raspberry-pi)
 for commands and the Foxglove trade-off.
-
-
-
-
-
-
-
-
-
-
 
 ## Common failures
 
