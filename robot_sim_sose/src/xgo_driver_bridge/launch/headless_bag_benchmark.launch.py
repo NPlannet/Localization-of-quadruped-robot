@@ -89,6 +89,12 @@ def launch_setup(context):
     mapper_scan_topic = (
         filter_output_topic if use_filter else filter_input_topic
     )
+    
+    velocity_scale = float(LaunchConfiguration('velocity_scale').perform(context))
+    if velocity_scale != 1.0:
+        odom_input_topic = '/xgo/applied_vel_scaled'
+    else:
+        odom_input_topic = '/xgo/applied_vel'
 
     actions = [
         LogInfo(
@@ -99,6 +105,25 @@ def launch_setup(context):
                 '/scan_filtered, /map, and SLAM outputs are excluded.'
             )
         ),
+    ]
+    
+    if velocity_scale != 1.0:
+        actions.append(
+            Node(
+                package='xgo_driver_bridge',
+                executable='velocity_scale_node',
+                name='velocity_scale_node',
+                output='screen',
+                parameters=[{
+                    'use_sim_time': True,
+                    'input_topic': '/xgo/applied_vel',
+                    'output_topic': '/xgo/applied_vel_scaled',
+                    'scale': velocity_scale,
+                }],
+            )
+        )
+        
+    actions.append(
         Node(
             package='xgo_driver_bridge',
             executable='xgo_offline_odom_node',
@@ -106,13 +131,15 @@ def launch_setup(context):
             output='screen',
             parameters=[{
                 'use_sim_time': True,
-                'input_twist_topic': '/xgo/applied_vel',
+                'input_twist_topic': odom_input_topic,
                 'input_imu_topic': '/imu/data',
                 'odom_topic': '/odom',
                 'publish_tf': True,
             }],
         ),
-    ]
+    )
+        
+        
 
     if normalize_scan:
         actions.append(
@@ -194,6 +221,8 @@ def launch_setup(context):
                         'use_sim_time': True,
                         'in_transport': 'compressed',
                         'out_transport': 'raw',
+                        'qos_overrides./camera/image_raw/compressed.subscription.reliability': 'best_effort',
+                        'qos_overrides./camera/image_raw/compressed.subscription.durability': 'volatile',
                     }],
                     remappings=[
                         ('in/compressed', '/camera/image_raw/compressed'),
@@ -436,5 +465,6 @@ def generate_launch_description():
                 config_dir, 'foxglove_bridge_robot.yaml'
             ),
         ),
+        DeclareLaunchArgument('velocity_scale', default_value='1.0'),
         OpaqueFunction(function=launch_setup),
     ])

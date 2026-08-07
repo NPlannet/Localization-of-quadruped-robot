@@ -10,6 +10,7 @@ NORMALIZE_SCAN=${NORMALIZE_SCAN:-false}
 START_FOXGLOVE=${START_FOXGLOVE:-false}
 FOXGLOVE_PORT=${FOXGLOVE_PORT:-8766}
 POST_PLAYBACK_DELAY_SEC=${POST_PLAYBACK_DELAY_SEC:-5.0}
+VELOCITY_SCALE=${VELOCITY_SCALE:-1.0}
 
 source_setup() {
   set +u
@@ -120,8 +121,8 @@ if [ -n "${WAYPOINTS_FILE}" ]; then
 fi
 
 RUN_BASE=bag_${SLAM_METHOD}_${SCAN_VARIANT}_${SOURCE_BAG_NAME}
-if [ -n "${RUN_TAG}" ]; then
-  RUN_BASE=${RUN_BASE}_${RUN_TAG}
+if [ "${VELOCITY_SCALE}" != "1.0" ]; then
+  RUN_BASE=${RUN_BASE}_vel${VELOCITY_SCALE}
 fi
 
 allocate_run_directory() {
@@ -281,6 +282,7 @@ ros2 launch xgo_driver_bridge headless_bag_benchmark.launch.py \
   waypoints_file:="${WAYPOINTS_FILE}" \
   evaluation_output_path:="${EVALUATION_OUTPUT}" \
   rtabmap_database_path:="${RTABMAP_DATABASE}" \
+  velocity_scale:="${VELOCITY_SCALE}" \
   > "${LAUNCH_LOG}" 2>&1
 LAUNCH_STATUS=$?
 set -e

@@ -77,7 +77,9 @@ class MapPatchNode(Node):
         )
 
         self.debug_blob_pub = self.create_publisher(MarkerArray, '/map_patch_node/debug_blobs', 10)
-        
+        self.gap_bridge_cells = int(
+            self.declare_parameter('gap_bridge_cells', 2).value
+        )
         self.map_topic = self.declare_parameter('map_topic', '/map').value
         self.patched_map_topic = self.declare_parameter('patched_map_topic', '/map_patched').value
         self.removed_object_topic = self.declare_parameter(
@@ -307,73 +309,78 @@ class MapPatchNode(Node):
     def resolve_object_cells(
         self, grid: OccupancyGrid, center_x: float, center_y: float, search_radius: float
     ) -> Optional[List[Tuple[float, float]]]:
-        """Sucht die naechste belegte Zelle um (center_x, center_y) und lauft
-        von dort per Flood-Fill ueber alle zusammenhaengenden belegten Zellen,
-        um den vollstaendigen Objekt-Fussabdruck (nicht nur einen Kreis) zu
-        bestimmen. Gibt die Weltkoordinaten aller Zellen des Objekts zurueck,
-        oder None, wenn im Suchradius nichts Belegtes gefunden wurde."""
+        """Nimmt alle Zellen innerhalb von `search_radius` um (center_x, center_y),
+        die tatsaechlich erkundet wurden (also nicht UNKNOWN sind). Das erfasst
+        den kompletten Sichtfeld-Bereich des gemeldeten Objekts, auch wenn seine
+        OCCUPIED-Zellen durch einzelne noch nicht erkundete Luecken unterbrochen
+        sind. Gibt None zurueck, wenn im Suchradius ueberhaupt keine belegte
+        Zelle gefunden wurde (Objekt vermutlich noch nicht/nicht hier)."""
         info = grid.info
         resolution = info.resolution
         if resolution <= 0.0:
             return None
-
+    
         origin_x = info.origin.position.x
         origin_y = info.origin.position.y
         width = info.width
         height = info.height
         data = grid.data
-
-        seed_radius = search_radius + self.blob_search_margin
-        min_col = max(int(math.floor((center_x - seed_radius - origin_x) / resolution)), 0)
-        max_col = min(int(math.floor((center_x + seed_radius - origin_x) / resolution)), width - 1)
-        min_row = max(int(math.floor((center_y - seed_radius - origin_y) / resolution)), 0)
-        max_row = min(int(math.floor((center_y + seed_radius - origin_y) / resolution)), height - 1)
-
-        seed_index = None
-        best_dist_sq = None
+    
+        radius = search_radius + self.blob_search_margin
+        min_col = max(int(math.floor((center_x - radius - origin_x) / resolution)), 0)
+        max_col = min(int(math.floor((center_x + radius - origin_x) / resolution)), width - 1)
+        min_row = max(int(math.floor((center_y - radius - origin_y) / resolution)), 0)
+        max_row = min(int(math.floor((center_y + radius - origin_y) / resolution)), height - 1)
+    
+        if min_col > max_col or min_row > max_row:
+            return None
+    
+        radius_cells_sq = (radius / resolution) ** 2
+        cells: List[Tuple[float, float]] = []
+        found_occupied = False
+    
         for row in range(min_row, max_row + 1):
             for col in range(min_col, max_col + 1):
-                index = row * width + col
-                if data[index] != OCCUPIED:
-                    continue
                 cell_x = origin_x + (col + 0.5) * resolution
                 cell_y = origin_y + (row + 0.5) * resolution
-                dist_sq = (cell_x - center_x) ** 2 + (cell_y - center_y) ** 2
-                if best_dist_sq is None or dist_sq < best_dist_sq:
-                    best_dist_sq = dist_sq
-                    seed_index = index
-
-        if seed_index is None:
+                dx = (cell_x - center_x) / resolution
+                dy = (cell_y - center_y) / resolution
+                if dx * dx + dy * dy > radius_cells_sq:
+                    continue
+                index = row * width + col
+                value = data[index]
+                if value == UNKNOWN:
+                    # Nie erkundet -> gehoert nicht zum "im Sichtfeld war"-Bereich.
+                    continue
+                if value == OCCUPIED:
+                    found_occupied = True
+                cells.append((cell_x, cell_y))
+    
+        if not found_occupied:
+            # Im Suchradius war nichts belegt -> vermutlich falscher Ort/noch
+            # nicht in der Karte angekommen, spaeter erneut versuchen.
             return None
-
-        visited = bytearray(width * height)
-        visited[seed_index] = 1
-        stack = [seed_index]
-        blob_indices = []
-
-        while stack:
-            index = stack.pop()
-            blob_indices.append(index)
-            if len(blob_indices) > self.max_object_cells:
-                self.get_logger().warning(
-                    'Flood-Fill abgebrochen: mehr als max_object_cells '
-                    f'({self.max_object_cells}) zusammenhaengende Zellen gefunden '
-                    '(vermutlich eine Wand statt eines einzelnen Objekts).'
-                )
-                return None
-            row, col = divmod(index, width)
-            for drow, dcol in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                nrow, ncol = row + drow, col + dcol
-                if 0 <= nrow < height and 0 <= ncol < width:
-                    nindex = nrow * width + ncol
-                    if not visited[nindex] and data[nindex] == OCCUPIED:
-                        visited[nindex] = 1
-                        stack.append(nindex)
-
-        return [
-            (origin_x + (idx % width + 0.5) * resolution, origin_y + (idx // width + 0.5) * resolution)
-            for idx in blob_indices
-        ]
+    
+        return cells
+    
+    def _gap_is_bridgeable(
+        self, data, width: int, height: int, row0: int, col0: int, row1: int, col1: int
+    ) -> bool:
+        """Prueft die Zellen auf der direkten Linie zwischen zwei Punkten
+        (exklusive der Endpunkte). Gibt False zurueck, sobald eine FREE-Zelle
+        dazwischen liegt (echter freier Korridor, nicht ueberbruecken), sonst
+        True (nur UNKNOWN dazwischen -> Luecke darf ueberbrueckt werden)."""
+        steps = max(abs(row1 - row0), abs(col1 - col0))
+        if steps <= 1:
+            return True
+        for step in range(1, steps):
+            r = round(row0 + (row1 - row0) * step / steps)
+            c = round(col0 + (col1 - col0) * step / steps)
+            if not (0 <= r < height and 0 <= c < width):
+                return False
+            if data[r * width + c] == FREE:
+                return False
+        return True
 
 
     def clear_cells(self, grid: OccupancyGrid, cells: List[Tuple[float, float]]) -> bool:
