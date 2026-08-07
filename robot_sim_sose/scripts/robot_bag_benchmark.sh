@@ -11,6 +11,8 @@ START_FOXGLOVE=${START_FOXGLOVE:-false}
 FOXGLOVE_PORT=${FOXGLOVE_PORT:-8766}
 POST_PLAYBACK_DELAY_SEC=${POST_PLAYBACK_DELAY_SEC:-5.0}
 VELOCITY_SCALE=${VELOCITY_SCALE:-1.0}
+STATIC_CONFIRMATIONS=${STATIC_CONFIRMATIONS:-20}
+STATIC_SPEED_THRESHOLD=${STATIC_SPEED_THRESHOLD:-0.06}
 
 source_setup() {
   set +u
@@ -44,6 +46,9 @@ Optional environment variables:
   FOXGLOVE_PORT=8766
   POST_PLAYBACK_DELAY_SEC=5.0
   RUN_TAG=room1              Optional label added before the unique run number
+  VELOCITY_SCALE=1.0
+  STATIC_CONFIRMATIONS=20    dynamic_scan_filter static_confirmations override
+  STATIC_SPEED_THRESHOLD=0.06  dynamic_scan_filter static_speed_threshold override
 EOF
 }
 
@@ -123,6 +128,12 @@ fi
 RUN_BASE=bag_${SLAM_METHOD}_${SCAN_VARIANT}_${SOURCE_BAG_NAME}
 if [ "${VELOCITY_SCALE}" != "1.0" ]; then
   RUN_BASE=${RUN_BASE}_vel${VELOCITY_SCALE}
+fi
+if [ "${STATIC_CONFIRMATIONS}" != "20" ]; then
+  RUN_BASE=${RUN_BASE}_sc${STATIC_CONFIRMATIONS}
+fi
+if [ "${STATIC_SPEED_THRESHOLD}" != "0.06" ]; then
+  RUN_BASE=${RUN_BASE}_sst${STATIC_SPEED_THRESHOLD}
 fi
 
 allocate_run_directory() {
@@ -213,6 +224,9 @@ printf '%s\n' \
   "start_foxglove=${START_FOXGLOVE}" \
   "foxglove_port=${FOXGLOVE_PORT}" \
   "playback_rate=${PLAYBACK_RATE}" \
+  "velocity_scale=${VELOCITY_SCALE}" \
+  "static_confirmations=${STATIC_CONFIRMATIONS}" \
+  "static_speed_threshold=${STATIC_SPEED_THRESHOLD}" \
   "post_playback_delay_sec=${POST_PLAYBACK_DELAY_SEC}" \
   "bag_path=${BAG_PATH}" \
   "source_bag_name=${SOURCE_BAG_NAME}" \
@@ -283,6 +297,8 @@ ros2 launch xgo_driver_bridge headless_bag_benchmark.launch.py \
   evaluation_output_path:="${EVALUATION_OUTPUT}" \
   rtabmap_database_path:="${RTABMAP_DATABASE}" \
   velocity_scale:="${VELOCITY_SCALE}" \
+  static_confirmations:="${STATIC_CONFIRMATIONS}" \
+  static_speed_threshold:="${STATIC_SPEED_THRESHOLD}" \
   > "${LAUNCH_LOG}" 2>&1
 LAUNCH_STATUS=$?
 set -e

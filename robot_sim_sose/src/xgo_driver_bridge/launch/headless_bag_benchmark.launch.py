@@ -170,6 +170,12 @@ def launch_setup(context):
                         'input_scan_topic': filter_input_topic,
                         'output_scan_topic': filter_output_topic,
                         'tracking_frame': 'odom',
+                        'static_confirmations': int(
+                            LaunchConfiguration('static_confirmations').perform(context)
+                        ),
+                        'static_speed_threshold': float(
+                            LaunchConfiguration('static_speed_threshold').perform(context)
+                        ),
                     },
                 ],
             )
@@ -466,5 +472,21 @@ def generate_launch_description():
             ),
         ),
         DeclareLaunchArgument('velocity_scale', default_value='1.0'),
+        DeclareLaunchArgument(
+            'static_confirmations',
+            default_value='20',
+            description=(
+                'dynamic_scan_filter static_confirmations override '
+                '(frames of low speed required before a track is trusted static).'
+            ),
+        ),
+        DeclareLaunchArgument(
+            'static_speed_threshold',
+            default_value='0.06',
+            description=(
+                'dynamic_scan_filter static_speed_threshold override '
+                '(m/s below which a track counts toward static_confirmations).'
+            ),
+        ),
         OpaqueFunction(function=launch_setup),
     ])

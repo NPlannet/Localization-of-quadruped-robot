@@ -99,7 +99,7 @@ def launch_setup(context, *args, **kwargs):
         arguments=[
             '/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist',
             '/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry',
-            '/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V',
+            '/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V',##########
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
             '/camera/image_raw@sensor_msgs/msg/Image[gz.msgs.Image',
             '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
