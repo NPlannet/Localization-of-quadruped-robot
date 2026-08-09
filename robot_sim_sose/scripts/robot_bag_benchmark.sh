@@ -13,6 +13,7 @@ POST_PLAYBACK_DELAY_SEC=${POST_PLAYBACK_DELAY_SEC:-5.0}
 VELOCITY_SCALE=${VELOCITY_SCALE:-1.0}
 STATIC_CONFIRMATIONS=${STATIC_CONFIRMATIONS:-20}
 STATIC_SPEED_THRESHOLD=${STATIC_SPEED_THRESHOLD:-0.06}
+MOVING_CONFIRMATIONS=${MOVING_CONFIRMATIONS:-4}
 
 source_setup() {
   set +u
@@ -49,6 +50,7 @@ Optional environment variables:
   VELOCITY_SCALE=1.0
   STATIC_CONFIRMATIONS=20    dynamic_scan_filter static_confirmations override
   STATIC_SPEED_THRESHOLD=0.06  dynamic_scan_filter static_speed_threshold override
+  MOVING_CONFIRMATIONS=4     dynamic_scan_filter moving_confirmations override
 EOF
 }
 
@@ -134,6 +136,9 @@ if [ "${STATIC_CONFIRMATIONS}" != "20" ]; then
 fi
 if [ "${STATIC_SPEED_THRESHOLD}" != "0.06" ]; then
   RUN_BASE=${RUN_BASE}_sst${STATIC_SPEED_THRESHOLD}
+fi
+if [ "${MOVING_CONFIRMATIONS}" != "4" ]; then
+  RUN_BASE=${RUN_BASE}_mc${MOVING_CONFIRMATIONS}
 fi
 
 allocate_run_directory() {
@@ -227,6 +232,7 @@ printf '%s\n' \
   "velocity_scale=${VELOCITY_SCALE}" \
   "static_confirmations=${STATIC_CONFIRMATIONS}" \
   "static_speed_threshold=${STATIC_SPEED_THRESHOLD}" \
+  "moving_confirmations=${MOVING_CONFIRMATIONS}" \
   "post_playback_delay_sec=${POST_PLAYBACK_DELAY_SEC}" \
   "bag_path=${BAG_PATH}" \
   "source_bag_name=${SOURCE_BAG_NAME}" \
@@ -299,6 +305,7 @@ ros2 launch xgo_driver_bridge headless_bag_benchmark.launch.py \
   velocity_scale:="${VELOCITY_SCALE}" \
   static_confirmations:="${STATIC_CONFIRMATIONS}" \
   static_speed_threshold:="${STATIC_SPEED_THRESHOLD}" \
+  moving_confirmations:="${MOVING_CONFIRMATIONS}" \
   > "${LAUNCH_LOG}" 2>&1
 LAUNCH_STATUS=$?
 set -e

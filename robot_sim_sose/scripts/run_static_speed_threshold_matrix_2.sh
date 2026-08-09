@@ -2,20 +2,20 @@
 set -euo pipefail
 
 # Usage:
-#   bash scripts/run_static_speed_threshold_matrix.sh <bag_path> [waypoints.json]
+#   bash scripts/run_static_speed_threshold_matrix_2.sh <bag_path> [waypoints.json]
 #
 # Runs, for the given bag:
 #   3 algorithms (slam_toolbox, cartographer, rtabmap)
 #   x scan_variant=filtered (static_speed_threshold only affects the filtered scan)
-#   x 3 static_speed_threshold values (0.3, 0.6, 0.9)
+#   x 2 static_speed_threshold values (0.03, 0.09)
 #   x 5 repetitions
-#   = 45 calls to robot_bag_benchmark.sh
+#   = 30 calls to robot_bag_benchmark.sh
 #
 # Requires robot_bag_benchmark.sh to forward STATIC_SPEED_THRESHOLD (if set) as a
 # dynamic_scan_filter node parameter override (-p static_speed_threshold:=<value>).
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
-  echo "Usage: bash scripts/run_static_speed_threshold_matrix.sh <bag_path> [waypoints.json]" >&2
+  echo "Usage: bash scripts/run_static_speed_threshold_matrix_2.sh <bag_path> [waypoints.json]" >&2
   exit 2
 fi
 
