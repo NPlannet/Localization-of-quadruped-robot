@@ -89,6 +89,15 @@ def launch_setup(context):
     mapper_scan_topic = (
         filter_output_topic if use_filter else filter_input_topic
     )
+
+    # /scan is played back from the bag with reliability=best_effort, forced
+    # by bag_benchmark_play_qos.yaml. /scan_filtered is instead re-published
+    # fresh by dynamic_scan_filter with rclcpp's reliable default. A mapper's
+    # scan subscriber must match whichever one it actually listens to, or the
+    # subscription silently never receives data (raw benchmarks previously
+    # failed 100% of the time this way; filtered ones happened to match by
+    # accident). rtabmap_ros' qos_scan parameter uses 1=reliable, 2=best_effort.
+    mapper_scan_qos = '1' if use_filter else '2'
     
     velocity_scale = float(LaunchConfiguration('velocity_scale').perform(context))
     if velocity_scale != 1.0:
@@ -263,6 +272,7 @@ def launch_setup(context):
                 ),
                 launch_arguments={
                     'scan_topic': mapper_scan_topic,
+                    'qos_scan': mapper_scan_qos,
                     'odom_topic': '/odom',
                     'camera_topic': '/camera/image_raw',
                     'camera_info_topic': '/camera/camera_info_benchmark',

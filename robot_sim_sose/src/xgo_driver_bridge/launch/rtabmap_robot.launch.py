@@ -62,7 +62,10 @@ def generate_launch_description():
         'sync_queue_size': 30,
         'qos_image': 1,
         'qos_camera_info': 1,
-        'qos_scan': 1,
+        'qos_scan': ParameterValue(
+            LaunchConfiguration('qos_scan'),
+            value_type=int,
+        ),
         'qos_odom': 1,
         'wait_for_transform': 1.0,
         'database_path': LaunchConfiguration('database_path'),
@@ -134,6 +137,20 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument('scan_topic', default_value='/scan_filtered'),
+        DeclareLaunchArgument(
+            'qos_scan',
+            default_value='1',
+            description=(
+                'rtabmap_ros QoS enum for its scan subscriber: 1=reliable, '
+                '2=best_effort. Must match the reliability of whatever '
+                'topic scan_topic points at, or the subscription silently '
+                'never receives data. Default (1/reliable) matches '
+                '/scan_filtered, which dynamic_scan_filter republishes with '
+                "rclcpp's reliable default. Raw /scan bag playback is "
+                'forced to best_effort by bag_benchmark_play_qos.yaml, so '
+                'callers pointing scan_topic at /scan must pass 2 here.'
+            ),
+        ),
         DeclareLaunchArgument('odom_topic', default_value='/odom'),
         DeclareLaunchArgument('camera_topic', default_value='/camera/image_raw'),
         DeclareLaunchArgument(
