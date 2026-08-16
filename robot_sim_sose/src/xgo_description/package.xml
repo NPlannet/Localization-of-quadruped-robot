@@ -20,6 +20,10 @@
   <exec_depend>gz-sim8</exec_depend>
 
   <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>slam_toolbox</exec_depend>
+  <exec_depend>xgo_driver_bridge</exec_depend>
   
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>cartographer_ros</exec_depend>

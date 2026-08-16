@@ -13,8 +13,6 @@ from sensor_msgs.msg import LaserScan
 from tf2_ros import Buffer, TransformException, TransformListener
 from visualization_msgs.msg import Marker, MarkerArray
 
-from builtin_interfaces.msg import Time as TimeMsg
-
 UNCERTAIN = 'uncertain'
 MOVING = 'moving'
 STATIC_TRUSTED = 'static_trusted'
@@ -127,23 +125,6 @@ class DynamicScanFilterNode(Node):
             output_scan_qos,
         )
         self.marker_pub = self.create_publisher(MarkerArray, self.marker_topic, 10)
-        
-        
-        self.removed_object_topic = self.declare_parameter(
-            'removed_object_topic',
-            '/dynamic_scan_filter/removed_static_objects',
-        ).value
-        self.removed_object_padding = float(
-            self.declare_parameter('removed_object_padding', 0.15).value
-        )
- 
-        self.removed_object_pub = self.create_publisher(
-            Marker,
-            self.removed_object_topic,
-            10,
-        )
-        
-        
         self.tracks: Dict[int, Track] = {}
         self.next_track_id = 1
         self.last_tf_warning_ns = 0
@@ -400,9 +381,6 @@ class DynamicScanFilterNode(Node):
  
             self.tracks[track_id].missed_frames += 1
             if self.tracks[track_id].missed_frames > self.max_missed_frames:
-                removed_track = self.tracks[track_id]
-                if removed_track.state == STATIC_TRUSTED:
-                    self.publish_removed_object(removed_track)
                 del self.tracks[track_id]
 
     def update_track(
@@ -470,40 +448,6 @@ class DynamicScanFilterNode(Node):
             track.state = STATIC_TRUSTED
         else:
             track.state = UNCERTAIN
-
-    def publish_removed_object(self, track: 'Track') -> None:
-        """Meldet ein Objekt, das lange als STATIC_TRUSTED galt und jetzt
-        aus der Verfolgung gefallen ist (= real aus der Welt entfernt wurde),
-        damit map_patch_node den gesamten Fussabdruck auf einmal loeschen kann.
-        """
-        marker = Marker()
-        marker.header.frame_id = self.tracking_frame
-        marker.header.stamp = self.get_clock().now().to_msg()
-        marker.ns = 'removed_static_object'
-        marker.id = track.track_id
-        marker.type = Marker.SPHERE
-        marker.action = Marker.ADD
-        marker.pose.orientation.w = 1.0
-        marker.pose.position = self.make_point(
-            track.centroid_tracking[0],
-            track.centroid_tracking[1],
-            0.0,
-        )
-        # scale.x wird als Durchmesser des zu loeschenden Bereichs interpretiert.
-        radius = max(track.span / 2.0, 0.05) + self.removed_object_padding
-        marker.scale.x = radius * 2.0
-        marker.scale.y = radius * 2.0
-        marker.scale.z = 0.1
-        marker.color.a = 1.0
- 
-        self.removed_object_pub.publish(marker)
-        # self.get_logger().info(
-        #     f'Track {track.track_id} (vormals static_trusted) verschwunden -> '
-        #     f'melde Loesch-Areal r={radius:.2f}m bei '
-        #     f'({track.centroid_tracking[0]:.2f}, {track.centroid_tracking[1]:.2f}) '
-        #     f'in Frame "{self.tracking_frame}".'
-        # )    
-
 
     def adjust_motion_distance_for_range(self, raw_distance: float, mean_range: float) -> float:
         if not self.range_adjustment_enabled:

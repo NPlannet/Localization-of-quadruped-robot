@@ -148,8 +148,7 @@ case "${1:-}" in
       use_sim_time:=false
     ;;
   explore)
-    cd "${WORKSPACE}"
-    python3 scripts/explore.py
+    ros2 run nav2_wfd explore
     ;;
   foxglove)
     ros2 run foxglove_bridge foxglove_bridge --ros-args \

@@ -22,7 +22,6 @@ foxglove_bridge:
       - "^/map$"
       - "^/map_metadata$"
       - "^/dynamic_scan_filter/cluster_markers$"
-      - "^/dynamic_scan_filter/removed_static_objects$"
       - "^/camera/camera_info$"
       - "^/camera/camera_info_benchmark$"
       - "^/camera/image_raw/compressed$"

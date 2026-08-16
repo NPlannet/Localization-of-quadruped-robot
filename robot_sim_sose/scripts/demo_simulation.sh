@@ -18,5 +18,6 @@ cd "${WORKSPACE}"
 source /opt/ros/jazzy/setup.bash
 source install/setup.bash
 
-# Pass optional ROS launch arguments through, for example: gui:=false
-exec ros2 launch xgo_description simulation.launch.py "$@"
+# Pass ROS launch arguments through, for example:
+#   slam_method:=cartographer gui:=false
+exec ros2 launch xgo_description demo_simulation.launch.py "$@"

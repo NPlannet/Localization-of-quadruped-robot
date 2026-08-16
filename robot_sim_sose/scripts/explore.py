@@ -4,6 +4,8 @@ import numpy as np
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
+from rclpy.duration import Duration
+from rclpy.time import Time
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import OccupancyGrid, Odometry
@@ -15,6 +17,7 @@ from PIL import Image as PILImage
 
 from nav2_simple_commander.robot_navigator import BasicNavigator
 from geometry_msgs.msg import PoseStamped
+from tf2_ros import Buffer, TransformException, TransformListener
 
 class RobotController(Node):
 
@@ -28,6 +31,8 @@ class RobotController(Node):
         self.create_subscription(Image, '/camera/image_raw', self.camera_callback, 10)
         self.create_subscription(OccupancyGrid,'/map', self.map_callback, 10)
         self.navigator = BasicNavigator()
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
         
         self.current_yaw = 0.0
         self.current_x = 0.0
@@ -157,6 +162,8 @@ class RobotController(Node):
     def explore_step(self):
         if self.map_data is None:
             return
+        if not self.update_map_pose():
+            return
         self.save_map_image()
 
         # Manuelles Ziel hat Vorrang: wird sofort losgeschickt, auch wenn pausiert
@@ -195,7 +202,6 @@ class RobotController(Node):
     def navigate_to(self, x, y):
         goal = PoseStamped()
         goal.header.frame_id = 'map'
-        goal.header.stamp = self.get_clock().now().to_msg()
         goal.pose.position.x = x
         goal.pose.position.y = y
         goal.pose.orientation.w = 1.0
@@ -204,12 +210,30 @@ class RobotController(Node):
 
     def grid_to_world(self, gx, gy):
         resolution = self.map_info.resolution
-        wx = gx * resolution + self.map_info.origin.position.x
-        wy = gy * resolution + self.map_info.origin.position.y
+        wx = (gx + 0.5) * resolution + self.map_info.origin.position.x
+        wy = (gy + 0.5) * resolution + self.map_info.origin.position.y
         return wx, wy
+
+    def update_map_pose(self):
+        try:
+            transform = self.tf_buffer.lookup_transform(
+                'map',
+                'base_link',
+                Time(),
+                timeout=Duration(seconds=1.0),
+            )
+        except TransformException as exc:
+            self.get_logger().warn(
+                f'Waiting for map -> base_link transform: {exc}'
+            )
+            return False
+
+        self.current_x = transform.transform.translation.x
+        self.current_y = transform.transform.translation.y
+        return True
     
     
-    def discover_next(self, min_distance = 1.5):
+    def discover_next(self, min_distance=0.3):
         if self.map_data is None:
             return None
     
@@ -222,7 +246,7 @@ class RobotController(Node):
         for y in range(1, h - 1):
             for x in range(1, w - 1):
     
-                if self.map_data[y, x] != 0:
+                if not 0 <= self.map_data[y, x] <= 49:
                     continue
     
                 neighbors = [
@@ -232,7 +256,8 @@ class RobotController(Node):
                     self.map_data[y, x - 1],
                 ]
     
-                if -1 in neighbors:
+                on_map_boundary = x in (1, w - 2) or y in (1, h - 2)
+                if -1 in neighbors or on_map_boundary:
                     distance = (hypot(x - robot_gx, y - robot_gy)* self.map_info.resolution)
                     if distance < min_distance:
                         continue

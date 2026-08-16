@@ -3,6 +3,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -61,18 +62,22 @@ def generate_launch_description():
             )
         ]
     )
-    
-    map_patch = TimerAction(
-        period=7.0,
+
+    rviz = TimerAction(
+        period=6.0,
         actions=[
             Node(
-                package='dynamic_scan_filter',
-                executable='map_patch_node',
-                name='map_patch_node',
+                package='rviz2',
+                executable='rviz2',
+                name='rviz2',
                 output='screen',
+                arguments=[
+                    '-d', os.path.join(pkg_share, 'rviz', 'slam_mapping.rviz')
+                ],
                 parameters=[{'use_sim_time': True}],
-            )
-        ]
+                condition=IfCondition(LaunchConfiguration('use_rviz')),
+            ),
+        ],
     )
     
     return LaunchDescription([
@@ -81,9 +86,13 @@ def generate_launch_description():
             default_value='true',
             description='Start the Gazebo GUI. Set false for server-only simulation.',
         ),
+        DeclareLaunchArgument(
+            'use_rviz',
+            default_value='false',
+            description='Start RViz with the SLAM configuration.',
+        ),
         gazebo,
         slam,
+        rviz,
         nav2,
-        map_patch,
     ])
-

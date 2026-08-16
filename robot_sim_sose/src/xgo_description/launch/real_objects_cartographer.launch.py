@@ -23,21 +23,6 @@ def generate_launch_description():
         }.items(),
     )
 
-    # Erzeugt /scan_filtered aus dem rohen Lidar-Scan (ersetzt slam_toolbox-Input).
-    # Frueh starten, damit Cartographer beim Start bereits Daten bekommt.
-    map_patch = TimerAction(
-        period=2.0,
-        actions=[
-            Node(
-                package='dynamic_scan_filter',
-                executable='map_patch_node',
-                name='map_patch_node',
-                output='screen',
-                parameters=[{'use_sim_time': True}],
-            )
-        ]
-    )
-
     cartographer = TimerAction(
         period=5.0,
         actions=[
@@ -128,7 +113,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'cartographer_scan_topic',
             default_value='/scan_filtered',
-            description='LaserScan topic fed into Cartographer (produced by map_patch_node).',
+            description='LaserScan topic fed into Cartographer.',
         ),
         DeclareLaunchArgument(
             'use_occupancy_grid',
@@ -151,7 +136,6 @@ def generate_launch_description():
             description='Start RViz with the SLAM config.',
         ),
         gazebo,
-        map_patch,
         cartographer,
         rviz,
         nav2,

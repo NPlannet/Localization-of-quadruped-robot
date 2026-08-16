@@ -453,6 +453,9 @@
 
       <camera>
 
+        <camera_info_topic>/camera/camera_info</camera_info_topic>
+        <optical_frame_id>camera_link</optical_frame_id>
+
         <horizontal_fov>1.08</horizontal_fov>
 
         <image>

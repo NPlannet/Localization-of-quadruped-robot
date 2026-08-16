@@ -4,7 +4,7 @@ Run scripts from the `robot_sim_sose/` workspace root.
 
 | Script | Purpose |
 | --- | --- |
-| `demo_simulation.sh` | Start the maintained Gazebo, filter, SLAM Toolbox, and Nav2 demo |
+| `demo_simulation.sh` | Start moving-object Gazebo, the filter, selected SLAM method, and Nav2 |
 | `sync_robot_runtime.sh` | Copy the robot runtime to a Raspberry Pi |
 | `robot_build_workspace.sh` | Build the robot ROS packages |
 | `robot_stack.sh` | Sensor checks, individual nodes, motion test, and map saving |

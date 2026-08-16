@@ -55,8 +55,7 @@ bash scripts/demo_simulation.sh slam_method:=slam_toolbox
 bash scripts/demo_simulation.sh slam_method:=cartographer
 bash scripts/demo_simulation.sh slam_method:=rtabmap
 ```
-Every variant
-starts a moving-object Gazebo world, the dynamic LiDAR filter, the selected
+Every variant starts a moving-object Gazebo world, the dynamic LiDAR filter, the selected
 mapper, and Nav2. RTAB-Map uses the simulated RGB camera for visual loop
 recognition by default; pass `rtabmap_use_camera:=false` for LiDAR-only mapping.
 
@@ -74,8 +73,6 @@ In the third terminal, start frontier exploration so the robot automatically
 selects goals and moves through the unknown environment:
 
 ```bash
-source /opt/ros/jazzy/setup.bash
-source install/setup.bash
 ros2 run nav2_wfd explore
 ```
 

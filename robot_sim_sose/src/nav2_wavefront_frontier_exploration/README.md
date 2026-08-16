@@ -1,43 +1,29 @@
-# Wavefront Frontier Detection
+# Nav2 Wavefront Frontier Explorer
 
- ### Implementation of Frontier Exploration based on this research paper: https://arxiv.org/ftp/arxiv/papers/1806/1806.03581.pdf
+This ROS 2 node finds reachable free cells bordering unknown space in `/map`
+and sends one goal at a time to Nav2's `/navigate_to_pose` action. It supports
+binary occupancy grids from SLAM Toolbox and RTAB-Map as well as Cartographer's
+probability-valued occupancy grids.
 
+The implementation is based on wavefront frontier detection described by
+[Quin et al.](https://arxiv.org/abs/1806.03581).
 
-## Overview
+## Build and run
 
-- Intended to work with ROS2's Nav2 stack
-  
-- Computes a list of Frontier centroids from the currently available Occupancy Grid
-  
-- Invoke's Nav2's waypoint follower to move the robot to the Frontiers
-  
-- Upon reaching the waypoint destinations, the latest Occupancy Grid will be evaluated for new Frontiers and continues to plot new waypoints until all Frontiers have been discovered
+```bash
+colcon build --symlink-install --packages-select nav2_wfd
+source install/setup.bash
+ros2 run nav2_wfd explore --ros-args -p use_sim_time:=true
+```
 
+Nav2, a live `/map`, and a connected `map -> base_link` TF tree must be
+available. The node waits while Nav2 and the mapper start. Do not run another
+explorer at the same time because both processes would send competing goals.
 
-## Instructions
+Useful parameters:
 
-## Building
-
-For basic/general build instructions follow this tutorial: https://index.ros.org/doc/ros2/Tutorials/Writing-A-Simple-Py-Publisher-And-Subscriber/
-
-- git clone the project into your colcon workspace's "src" directory
-- In your colcon workspace root directory run:
-  
-        rosdep install -i --from-path src --rosdistro foxy -y
-        colcon build --packages-select nav2_wfd
-
-- Setup development path:
-
-        . install/setup.bash
-
-
-## Running
-Works with Nav2's Turtlebot Simulation: https://navigation.ros.org/getting_started/index.html#running-the-example   be sure to use "slam:=True" when launching "tb3_simulation_launch.py" such as:
-
-    ros2 launch nav2_bringup tb3_simulation_launch.py slam:=True
-
-Once the Turtlebot Simulation has launch, in a separate window run:
-    
-    ros2 run nav2_wfd explore
-
-
+- `free_threshold` (default `49`): highest occupancy value treated as free
+- `occupied_threshold` (default `65`): occupancy value treated as occupied
+- `minimum_frontier_size` (default `5`): minimum connected frontier cells
+- `minimum_goal_distance` (default `0.5` m): ignore targets already at the robot
+- `empty_frontier_retries` (default `10`): map-update retries before finishing
