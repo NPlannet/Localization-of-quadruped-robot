@@ -82,6 +82,12 @@ class YoloDetectorNode(Node):
             os.makedirs('/workspaces/robot_sim_sose/detections', exist_ok=True)
             cv2.imwrite(f'/workspaces/robot_sim_sose/detections/{timestamp}.jpg', annotated)
             self.get_logger().info(f'Bild gespeichert: detections/{timestamp}.jpg')
+        else:
+            annotated = results[0].plot()
+            timestamp = self.get_clock().now().nanoseconds
+            os.makedirs('/workspaces/robot_sim_sose/no_detections', exist_ok=True)
+            cv2.imwrite(f'/workspaces/robot_sim_sose/no_detections/{timestamp}.jpg', annotated)
+            self.get_logger().info(f'Bild gespeichert: no_detections/{timestamp}.jpg')
 
 
 def main(args=None):
