@@ -128,6 +128,5 @@ stored in ordinary Git.
 - [Recording and evaluation](robot_sim_sose/docs/evaluation.md)
 - [Script reference](robot_sim_sose/scripts/README.md)
 
-
 ## AI Use
-AI was used to support the implementation and structure of this repository. In Particular, Codex 5.5,5.6,both set on High, and Claude Opus 4.8 were used.
+Generative AI tools were used to assist with the implementation, debugging, and organization of this repository. Specifically, OpenAI Codex 5.5 and 5.6, both configured with high reasoning effort, and Anthropic Claude Opus 4.8 were used. All incorporated AI-generated suggestions and code were reviewed, adapted, and tested by the authors, who remain responsible for the final implementation.
