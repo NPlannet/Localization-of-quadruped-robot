@@ -22,11 +22,10 @@ install(TARGETS xgo_glide_trajectory_system
 )
 
 
-# Install directories to the 'share' folder so ROS 2 can find your meshes and URDF
-install(DIRECTORY 
-    config 
-    launch 
-    meshes 
+# Install runtime assets in the package share directory.
+install(DIRECTORY
+    config
+    launch
     rviz
     scripts
     worlds
@@ -34,5 +33,4 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}
 )
 
-# This replaces catkin_package() and MUST be the last line
 ament_package()

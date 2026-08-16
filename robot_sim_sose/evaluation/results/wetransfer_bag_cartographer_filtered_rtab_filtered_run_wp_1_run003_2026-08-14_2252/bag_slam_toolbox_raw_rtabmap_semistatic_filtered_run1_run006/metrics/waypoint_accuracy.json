@@ -1,0 +1,71 @@
+{
+  "waypoints_file": "/workspaces/robot_sim_sose/evaluation/runs/rtabmap_semistatic_filtered_run1/waypoints.json",
+  "reference_frame": "map",
+  "base_frame": "base_link",
+  "evaluated_count": 1,
+  "failed_count": 0,
+  "settling_window_sec": 1.0,
+  "window_sample_count": 11,
+  "alignment": {
+    "mode": "se2",
+    "description": "Least-squares rigid 2D transform from the SLAM map frame to the surveyed waypoint frame; no scale fitting.",
+    "yaw_rad": 0.0,
+    "yaw_deg": 0.0,
+    "translation_x_m": 0.0,
+    "translation_y_m": 0.0
+  },
+  "raw_position_metrics": {
+    "mae_m": 0.0,
+    "rmse_m": 0.0,
+    "median_m": 0.0,
+    "p95_m": 0.0,
+    "max_m": 0.0,
+    "std_m": 0.0
+  },
+  "aligned_position_metrics": {
+    "mae_m": 0.0,
+    "rmse_m": 0.0,
+    "median_m": 0.0,
+    "p95_m": 0.0,
+    "max_m": 0.0,
+    "std_m": 0.0
+  },
+  "aligned_yaw_metrics": {
+    "mae_deg": null,
+    "rmse_deg": null,
+    "median_deg": null,
+    "p95_deg": null,
+    "max_deg": null,
+    "std_deg": null
+  },
+  "revisit_count": 0,
+  "revisits": [],
+  "mae_m": 0.0,
+  "rmse_m": 0.0,
+  "median_m": 0.0,
+  "p95_m": 0.0,
+  "max_error_m": 0.0,
+  "results": [
+    {
+      "index": 0,
+      "label": "1",
+      "stamp_ns": 1786008726980539985,
+      "gt_x": 0.0,
+      "gt_y": 0.0,
+      "gt_yaw_deg": null,
+      "est_x": 0.0,
+      "est_y": 0.0,
+      "est_yaw_deg": -109.17771194642884,
+      "sample_count": 11,
+      "position_stability_std_m": 0.0,
+      "yaw_stability_std_deg": 0.2899075723326256,
+      "raw_error_m": 0.0,
+      "aligned_x": 0.0,
+      "aligned_y": 0.0,
+      "aligned_yaw_deg": -109.17771194642884,
+      "aligned_error_m": 0.0,
+      "yaw_error_deg": null
+    }
+  ],
+  "failed_waypoints": []
+}

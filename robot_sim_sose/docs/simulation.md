@@ -1,15 +1,13 @@
 # Gazebo Simulation
 
-## Start the development container
-
-From `robot_sim_sose/` on the laptop:
+Start the desktop container from `robot_sim_sose/`:
 
 ```bash
 docker compose up -d --build
 docker compose exec ros-dev bash
 ```
 
-Inside the container:
+Build and launch inside the container:
 
 ```bash
 source /opt/ros/jazzy/setup.bash
@@ -18,40 +16,33 @@ source install/setup.bash
 ros2 launch xgo_description simulation.launch.py
 ```
 
-The default launch starts Gazebo with its GUI. Select another world with an
-absolute SDF path or run headlessly:
+The default launch starts Gazebo, the dynamic scan filter, SLAM Toolbox, and
+Nav2. Run without the Gazebo GUI with:
 
 ```bash
-ros2 launch xgo_description simulation.launch.py \
-  world:=/workspaces/robot_sim_sose/src/xgo_description/worlds/dynamic_obstacles_world.sdf
-
 ros2 launch xgo_description simulation.launch.py gui:=false
 ```
 
-## Inspect the data
-
-Check that the simulated clock, TF, scan, and camera are alive:
+Use the moving-object world and map-cleanup prototype with:
 
 ```bash
-ros2 topic hz /scan
-ros2 topic echo /clock --once
-ros2 run tf2_ros tf2_echo odom base_link
-ros2 topic list | grep camera
+ros2 launch xgo_description real_objects.launch.py
 ```
 
-Start the project's SLAM-oriented RViz configuration in another sourced shell:
+Open the project RViz configuration in another sourced shell:
 
 ```bash
 ros2 launch xgo_description rviz_slam.launch.py
 ```
 
-For ROS nodes in simulation, keep `use_sim_time:=true`. A mixture of wall time
-and simulation time commonly causes RViz message-filter drops.
+Basic checks:
 
-## Exploration
+```bash
+ros2 topic hz /scan
+ros2 topic hz /scan_filtered
+ros2 topic echo /clock --once
+ros2 run tf2_ros tf2_echo odom base_link
+```
 
-The Nav2 parameters and exploration package live in
-`src/xgo_description/config/nav2_params.yaml` and
-`src/nav2_wavefront_frontier_exploration/`. Build and source the workspace
-before launching them. Keep robot motion conservative when transferring tuning
-from Gazebo to the quadruped; simulated traction and body motion are idealized.
+All simulation nodes must use simulation time. Mixing wall time and `/clock`
+causes TF and RViz message-filter errors.

@@ -1,51 +1,41 @@
 # Localization of a Quadruped Robot
 
-ROS 2 Jazzy workspace for evaluating mapping and localization on the XGO
-Mini2 quadruped robot. The project supports Gazebo simulation, a physical
-Raspberry Pi robot, repeatable rosbag replay, and comparisons between:
+ROS 2 Jazzy project for comparing localization and mapping on an XGO Mini2
+quadruped robot. It supports:
 
-- SLAM Toolbox;
-- Cartographer;
-- RTAB-Map with optional RGB loop recognition; and
-- raw versus dynamically filtered LiDAR scans.
+- SLAM Toolbox, Cartographer, and RTAB-Map;
+- raw and dynamically filtered LD19 LiDAR scans;
+- RGB loop recognition with RTAB-Map;
+- Gazebo simulation and physical Raspberry Pi deployment; and
+- repeatable bag replay with accuracy, CPU, memory, and battery measurements.
 
-## Repository Guide
-
-The ROS workspace is in `robot_sim_sose/`:
+## Repository layout
 
 ```text
 robot_sim_sose/
-├── docs/            Project guides
-├── scripts/         User-facing build, deployment, recording, and analysis tools
-├── evaluation/      Datasets, generated runs, and evaluation results
-├── src/             Project-owned ROS 2 packages
-├── third_party/     Vendored ROS packages
-├── .devcontainer/   Development and robot Dockerfiles
-└── docker-compose*.yml
+├── src/            ROS 2 packages
+├── scripts/        Recording, deployment, and evaluation tools
+├── evaluation/     Dataset sidecars and retained results
+├── docs/           Task-specific guides
+├── third_party/    Vendored LD19 driver
+└── .devcontainer/  Desktop and Raspberry Pi Dockerfiles
 ```
 
-Start with the guide matching your task:
+The main project packages are:
 
-- [Architecture and package responsibilities](robot_sim_sose/docs/architecture.md)
-- [Gazebo simulation](robot_sim_sose/docs/simulation.md)
-- [Physical robot deployment](robot_sim_sose/docs/robot-deployment.md)
-- [Raspberry Pi host configuration](robot_sim_sose/docs/raspberry-pi- setup.md)
-- [Bag replay and evaluation](robot_sim_sose/docs/evaluation.md)
+- `dynamic_scan_filter`: dynamic LiDAR filtering, scan normalization, and map
+  cleanup prototype;
+- `xgo_driver_bridge`: XGO SDK bridge, IMU/odometry, robot bringup, and bag
+  evaluation nodes; and
+- `xgo_description`: Gazebo model, worlds, RViz, and desktop bag replay.
 
-## Development Container
+## Desktop setup
 
-From the repository root:
+From `robot_sim_sose/`:
 
 ```bash
-cd robot_sim_sose
 docker compose up -d --build
 docker compose exec ros-dev bash
-```
-
-For NVIDIA GPU support:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.nvidia.yml up -d --build
 ```
 
 Inside the container:
@@ -56,97 +46,74 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
-## Quick Start: Simulation
+## Simulation demo
 
-Inside the development container:
+Run the demo script inside the built desktop container:
+
+```bash
+bash scripts/demo_simulation.sh
+```
+
+It starts Gazebo, the dynamic LiDAR filter, SLAM Toolbox, and Nav2. The direct
+ROS launch command is:
 
 ```bash
 ros2 launch xgo_description simulation.launch.py
 ```
 
-See [docs/simulation.md](robot_sim_sose/docs/simulation.md) for display,
-world, RViz, camera, and exploration instructions.
+Pass launch arguments through the script when needed, for example
+`bash scripts/demo_simulation.sh gui:=false`. This is the maintained Gazebo
+demo; Cartographer and RTAB-Map are evaluated through the common robot/bag
+pipeline described below.
 
-## Quick Start: Physical Robot
+## Physical robot
 
 Sync the runtime from the laptop:
 
 ```bash
-cd robot_sim_sose
-bash scripts/sync_robot_runtime.sh pi@robodoge1.local
+bash scripts/sync_robot_runtime.sh pi@ROBOT_HOST
 ```
 
-On the robot, enter the hardware container and build the workspace:
+On the robot, build and start the container, then launch the sensor stack:
 
 ```bash
 cd ~/robot_sim_sose
-docker compose -f docker-compose.robot.yml up -d
+docker compose -f docker-compose.robot.yml up -d --build
 docker compose -f docker-compose.robot.yml exec xgo-robot bash
 bash scripts/robot_build_workspace.sh
-```
-
-Start the robot without SLAM while retaining motion, Lichtblick, both LiDAR
-topics, camera, IMU, and odometry:
-
-```bash
+source install/setup.bash
 ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
-  enable_motion:=true \
-  start_foxglove:=true \
-  start_dynamic_filter:=true \
-  slam_method:=none
+  enable_motion:=false slam_method:=none
 ```
 
-See [docs/robot-deployment.md](robot_sim_sose/docs/robot-deployment.md) before
-operating the physical robot.
+See [robot deployment](robot_sim_sose/docs/robot-deployment.md) before enabling
+motion. The exact live and replay configuration files are indexed in
+[robot runtime configuration](robot_sim_sose/src/xgo_driver_bridge/config/README.md).
 
-## Quick Start: Record A Dataset
+## Record and evaluate
 
-With the robot bringup already running, open a second shell in the same
-container:
+With robot bringup already running:
 
 ```bash
-bash scripts/record_robot_run.sh sensor_only_run1
+bash scripts/record_robot_run.sh RUN_NAME
 ```
 
-Press `Ctrl+C` once to finalize the MCAP bag, CPU/RAM summary, and battery
-summary. The existing robot bringup remains running. New runs are written under:
-
-```text
-robot_sim_sose/evaluation/runs/<run_name>/
-```
-
-## Quick Start: Replay W1
-
-The replay launches default to the structured W1 dataset and result paths:
+For one headless replay evaluation:
 
 ```bash
-ros2 launch xgo_description bag_replay.launch.py \
-  use_dynamic_filter:=true
-
-ros2 launch xgo_description bag_replay_cartographer.launch.py \
-  use_dynamic_filter:=false
-
-ros2 launch xgo_description bag_replay_rtabmap.launch.py \
-  use_dynamic_filter:=true use_camera:=true
+bash scripts/robot_bag_benchmark.sh \
+  cartographer raw /path/to/bag /path/to/waypoints.json
 ```
 
-See [docs/evaluation.md](robot_sim_sose/docs/evaluation.md) for methodology,
-output files, and plotting.
+Runs are written below `evaluation/runs/`; retained summaries belong below
+`evaluation/results/`. Raw bags and RTAB-Map databases are intentionally not
+stored in ordinary Git.
 
-## Main ROS Packages
+## Guides
 
-| Package | Responsibility |
-| --- | --- |
-| `xgo_description` | URDF, Gazebo simulation, visualization, and offline replay launches |
-| `xgo_driver_bridge` | Physical XGO SDK bridge, odometry, robot bringup, and mapper selection |
-| `dynamic_scan_filter` | Filters dynamic LiDAR returns into `/scan_filtered` |
-| `nav2_wfd` | Wavefront-frontier exploration using Nav2 |
-| `yolo_detector` | Optional camera object detection experiment |
-| `ldlidar_stl_ros2` | Third-party LD19 driver under `third_party/` |
-
-## Generated And Large Data
-
-Raw MCAP bags, RTAB-Map databases, and temporary runs are intentionally kept
-out of ordinary Git tracking. Store important datasets externally or with Git
-LFS. Small reproducible artifacts such as metrics JSON, map YAML/PGM files,
-and presentation plots belong under `evaluation/results/`.
+- [Architecture and coordinate frames](robot_sim_sose/docs/architecture.md)
+- [Gazebo simulation](robot_sim_sose/docs/simulation.md)
+- [Physical robot deployment](robot_sim_sose/docs/robot-deployment.md)
+- [Raspberry Pi host setup](robot_sim_sose/docs/raspberry-pi-setup.md)
+- [Recording and evaluation](robot_sim_sose/docs/evaluation.md)
+- [Script reference](robot_sim_sose/scripts/README.md)

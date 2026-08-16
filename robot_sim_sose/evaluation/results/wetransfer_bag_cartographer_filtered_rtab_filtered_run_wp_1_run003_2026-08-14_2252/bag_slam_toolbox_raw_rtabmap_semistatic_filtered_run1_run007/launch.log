@@ -1,0 +1,85 @@
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-08-10-15-00-17-999862-robodoge1-7917
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: Headless bag benchmark: method=slam_toolbox, scan=/scan, camera=False, foxglove=False. Recorded /odom, /tf, /scan_filtered, /map, and SLAM outputs are excluded.
+[INFO] [xgo_offline_odom_node-1]: process started with pid [7933]
+[INFO] [async_slam_toolbox_node-2]: process started with pid [7934]
+[INFO] [waypoint_accuracy_node-3]: process started with pid [7935]
+[async_slam_toolbox_node-2] [INFO] [1786374019.402633527] [slam_toolbox]: Configuring
+[async_slam_toolbox_node-2] [INFO] [1786374019.434146964] [slam_toolbox]: Using solver plugin solver_plugins::CeresSolver
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT)
+[xgo_offline_odom_node-1] Traceback (most recent call last):
+[xgo_offline_odom_node-1]   File "/workspaces/robot_sim_sose/install/xgo_driver_bridge/lib/xgo_driver_bridge/xgo_offline_odom_node", line 33, in <module>
+[xgo_offline_odom_node-1]     sys.exit(load_entry_point('xgo-driver-bridge', 'console_scripts', 'xgo_offline_odom_node')())
+[xgo_offline_odom_node-1]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[xgo_offline_odom_node-1]   File "/workspaces/robot_sim_sose/install/xgo_driver_bridge/lib/xgo_driver_bridge/xgo_offline_odom_node", line 25, in importlib_load_entry_point
+[xgo_offline_odom_node-1]     return next(matches).load()
+[xgo_offline_odom_node-1]            ^^^^^^^^^^^^^^^^^^^^
+[xgo_offline_odom_node-1]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+[xgo_offline_odom_node-1]     module = import_module(match.group('module'))
+[xgo_offline_odom_node-1]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[xgo_offline_odom_node-1]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+[xgo_offline_odom_node-1]     return _bootstrap._gcd_import(name[level:], package, level)
+[xgo_offline_odom_node-1]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[xgo_offline_odom_node-1]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+[xgo_offline_odom_node-1]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+[xgo_offline_odom_node-1]   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+[xgo_offline_odom_node-1]   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+[xgo_offline_odom_node-1]   File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+[xgo_offline_odom_node-1]   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+[xgo_offline_odom_node-1]   File "/workspaces/robot_sim_sose/build/xgo_driver_bridge/xgo_driver_bridge/offline_odom_node.py", line 7, in <module>
+[xgo_offline_odom_node-1]     from rclpy.node import Node
+[xgo_offline_odom_node-1]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 42, in <module>
+[xgo_offline_odom_node-1]     from rcl_interfaces.srv import ListParameters
+[xgo_offline_odom_node-1]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rcl_interfaces/srv/__init__.py", line 1, in <module>
+[xgo_offline_odom_node-1]     from rcl_interfaces.srv._describe_parameters import DescribeParameters  # noqa: F401
+[xgo_offline_odom_node-1]     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[xgo_offline_odom_node-1]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rcl_interfaces/srv/_describe_parameters.py", line 162, in <module>
+[xgo_offline_odom_node-1]     class Metaclass_DescribeParameters_Response(type):
+[xgo_offline_odom_node-1] KeyboardInterrupt
+[waypoint_accuracy_node-3] Traceback (most recent call last):
+[waypoint_accuracy_node-3]   File "/workspaces/robot_sim_sose/install/xgo_driver_bridge/lib/xgo_driver_bridge/waypoint_accuracy_node", line 33, in <module>
+[waypoint_accuracy_node-3]     sys.exit(load_entry_point('xgo-driver-bridge', 'console_scripts', 'waypoint_accuracy_node')())
+[waypoint_accuracy_node-3]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[waypoint_accuracy_node-3]   File "/workspaces/robot_sim_sose/install/xgo_driver_bridge/lib/xgo_driver_bridge/waypoint_accuracy_node", line 25, in importlib_load_entry_point
+[waypoint_accuracy_node-3]     return next(matches).load()
+[waypoint_accuracy_node-3]            ^^^^^^^^^^^^^^^^^^^^
+[waypoint_accuracy_node-3]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+[waypoint_accuracy_node-3]     module = import_module(match.group('module'))
+[waypoint_accuracy_node-3]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[waypoint_accuracy_node-3]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+[waypoint_accuracy_node-3]     return _bootstrap._gcd_import(name[level:], package, level)
+[waypoint_accuracy_node-3]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[waypoint_accuracy_node-3]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+[waypoint_accuracy_node-3]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+[waypoint_accuracy_node-3]   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+[waypoint_accuracy_node-3]   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+[waypoint_accuracy_node-3]   File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+[waypoint_accuracy_node-3]   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+[waypoint_accuracy_node-3]   File "/workspaces/robot_sim_sose/build/xgo_driver_bridge/xgo_driver_bridge/waypoint_accuracy_node.py", line 11, in <module>
+[waypoint_accuracy_node-3]     from rclpy.node import Node
+[waypoint_accuracy_node-3]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 80, in <module>
+[waypoint_accuracy_node-3]     from rclpy.time_source import TimeSource
+[waypoint_accuracy_node-3]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/time_source.py", line 25, in <module>
+[waypoint_accuracy_node-3]     import rosgraph_msgs.msg
+[waypoint_accuracy_node-3]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rosgraph_msgs/msg/__init__.py", line 9, in <module>
+[waypoint_accuracy_node-3]     from rosgraph_msgs.msg._type_hash import TypeHash  # noqa: F401
+[waypoint_accuracy_node-3]     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[waypoint_accuracy_node-3]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rosgraph_msgs/msg/_type_hash.py", line 18, in <module>
+[waypoint_accuracy_node-3]     import numpy  # noqa: E402, I100
+[waypoint_accuracy_node-3]     ^^^^^^^^^^^^
+[waypoint_accuracy_node-3]   File "/usr/lib/python3/dist-packages/numpy/__init__.py", line 149, in <module>
+[waypoint_accuracy_node-3]     from . import lib
+[waypoint_accuracy_node-3]   File "/usr/lib/python3/dist-packages/numpy/lib/__init__.py", line 36, in <module>
+[waypoint_accuracy_node-3]     from . import arraypad
+[waypoint_accuracy_node-3]   File "<frozen importlib._bootstrap>", line 1357, in _find_and_load
+[waypoint_accuracy_node-3] KeyboardInterrupt
+[async_slam_toolbox_node-2] [INFO] [1786374019.489238464] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[async_slam_toolbox_node-2] [ERROR] [1786374019.499262087] [slam_toolbox]: Caught exception in callback for transition 10
+[async_slam_toolbox_node-2] [ERROR] [1786374019.499298291] [slam_toolbox]: Original error: could not create service: rcl node's context is invalid, at ./src/rcl/node.c:404
+[async_slam_toolbox_node-2] [ERROR] [1786374019.499357291] [slam_toolbox]: Failed to finish transition 1. Current state is now: errorprocessing (Could not publish transition: publisher's context is invalid, at ./src/rcl/publisher.c:423, at ./src/rcl_lifecycle.c:368)
+[ERROR] [xgo_offline_odom_node-1]: process has died [pid 7933, exit code -2, cmd '/workspaces/robot_sim_sose/install/xgo_driver_bridge/lib/xgo_driver_bridge/xgo_offline_odom_node --ros-args -r __node:=xgo_offline_odom --params-file /tmp/launch_params_4iordxik'].
+[ERROR] [waypoint_accuracy_node-3]: process has died [pid 7935, exit code -2, cmd '/workspaces/robot_sim_sose/install/xgo_driver_bridge/lib/xgo_driver_bridge/waypoint_accuracy_node --ros-args -r __node:=waypoint_accuracy_monitor --params-file /tmp/launch_params_b6a_v2qj'].
+[INFO] [async_slam_toolbox_node-2]: process has finished cleanly [pid 7934]
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT) again, ignoring...
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT) again, ignoring...
+[WARNING] [launch_ros.utilities.lifecycle_event_manager]: Abandoning wait for the '/slam_toolbox/change_state' service response, due to shutdown.

@@ -1,215 +1,133 @@
 # XGO Mini2 Robot Deployment
 
-The physical robot uses a privileged, host-networked ROS 2 Jazzy container.
-Host UART, camera, and timing prerequisites are listed separately in
-[`raspberry-pi-setup.md`](raspberry-pi-setup.md).
+The robot uses a privileged, host-networked ROS 2 Jazzy container. Configure
+UART and camera access first using [Raspberry Pi host setup](raspberry-pi-setup.md).
 
-## Sync Files from the laptop
+## Sync and build
 
-From `robot_sim_sose/`:
+From `robot_sim_sose/` on the laptop:
 
 ```bash
-bash scripts/sync_robot_runtime.sh pi@robodoge1.local
+bash scripts/sync_robot_runtime.sh pi@ROBOT_HOST
 ```
-
-## Build and enter the container
 
 On the robot:
 
 ```bash
 cd ~/robot_sim_sose
-docker compose -f docker-compose.robot.yml build
-docker compose -f docker-compose.robot.yml up -d
+docker compose -f docker-compose.robot.yml up -d --build
 docker compose -f docker-compose.robot.yml exec xgo-robot bash
 bash scripts/robot_build_workspace.sh
+source install/setup.bash
 ```
 
-
-## Unified sensor bringup
-
-Inside the container:
+In every new container shell, source the workspace if it was not sourced
+automatically:
 
 ```bash
 source /opt/ros/jazzy/setup.bash
 source install/setup.bash
-ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py
 ```
 
-Defaults start the XGO bridge, LD19, camera, dynamic filter, and Foxglove
-Bridge. No SLAM method is selected by default. `enable_motion` permits the
-bridge to apply `/cmd_vel`; the launch itself does not command movement.
+## Start and verify sensors
 
-
-## Select a mapper
-
-The same bringup can start any supported mapper:
+Start without allowing motion for the first check:
 
 ```bash
-slam_method:= slam_toolbox , cartographer , rtabmap
-slam_scan_topic:=/scan , /scan_filtered
-```
-
-```bash
-# Cartographer with raw LiDAR, external odometry, and IMU
 ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
-  enable_motion:=true slam_method:=cartographer slam_scan_topic:=/scan_filtered
+  enable_motion:=false slam_method:=none
+```
 
-# RTAB-Map with filtered LiDAR and RGB loop recognition
+This starts the XGO bridge, LD19, camera, dynamic filter, waypoint marker, and
+Foxglove bridge. It publishes `/scan`, `/scan_filtered`, `/imu/data`, `/odom`,
+`/battery_state`, camera topics, and TF.
+
+Verify the stack in a second container shell:
+
+```bash
+bash scripts/robot_stack.sh check
+ros2 topic hz /scan
+ros2 topic hz /imu/data
+ros2 run tf2_ros tf2_echo odom base_link
+```
+
+Rotate the stationary robot and confirm that IMU yaw changes smoothly before
+mapping.
+
+## Select SLAM and scan input
+
+Set `slam_method` to `slam_toolbox`, `cartographer`, or `rtabmap`. Select
+`/scan` for raw input or `/scan_filtered` for the dynamic filter.
+
+```bash
 ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
-  enable_motion:=true slam_method:=rtabmap \
-  slam_scan_topic:=/scan_filtered rtabmap_use_camera:=true \
-  rtabmap_delete_database_on_start:=true
-
-# For a compute-oriented sensor run without camera or visualization:
-
-ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
-  enable_motion:=true start_camera:=false start_foxglove:=false \
-  start_dynamic_filter:=false slam_method:=none
+  enable_motion:=true \
+  slam_method:=slam_toolbox \
+  slam_scan_topic:=/scan_filtered
 ```
 
-Use `/scan` for a raw trial. Use `/scan_filtered` only when
-`start_dynamic_filter:=true`.
+For RTAB-Map RGB loop recognition, keep the camera enabled and add:
 
-
-## Record runs, CPU use, and battery
-
-When bringup is already running, attach the standalone recorder:
-
-```bash
-bash scripts/record_robot_run.sh rtab_filtered_run_wp_1
+```text
+rtabmap_use_camera:=true rtabmap_delete_database_on_start:=true
 ```
 
-Press `Ctrl+C` once to finalize the MCAP, CPU/RAM summary, and battery summary.
+Deleting the RTAB-Map database at startup is appropriate for independent
+evaluation runs, not for continuing an existing map.
 
+The launch file never commands movement by itself. With
+`enable_motion:=true`, it only allows incoming `/cmd_vel` messages to reach the
+robot. Use `bash scripts/robot_stack.sh stop` for an explicit zero command.
 
+## Lichtblick/Foxglove
 
-## Copy a run to the laptop from the laptop shell:
-
-```bash
-scp -r pi@robodoge1.local:~/robot_sim_sose/evaluation/runs/rtab_filtered_run_wp_3 \
-  robot_sim_sose/evaluation/runs/
-```
-
-
-##  Prepare Waypoints.JSON
-before you can use the recorded bag for testing , you have to label the timestamps that were recorded under /ground_truth/waypoint
-For that you have to log into the robot and run 
-
-Terminal 1
-```bash
-ros2 topic echo \
-  /ground_truth/waypoint \
-  std_msgs/msg/String \
-  --field data \
-  | tee /workspaces/robot_sim_sose/evaluation/runs/rtab_filtered_run_wp_1/waypoint_timestamps.txt
-```
-creates a txt file containing the timestamps of the waypoints
-  Terminal 2
-```bash
-  ros2 bag play \
-  /workspaces/robot_sim_sose/evaluation/runs/rtab_filtered_run_wp_1/bag \
-  --topics /ground_truth/waypoint \
-  --rate 100
-```
-
-
-Then you can paste the txt file content together with the context below 
-into e.g Chat GPT and create a waypoints.json file in the folder of the run ,
-e.g evaluation/run/rtab_filtered/
-
-Context(change order of visited waypoints):
-Visited waypoints in order: (e.g 1,2,3,4,5,5,4,3,2,1)
-JSON FILE FORMAT
-{
-  "topic": "/ground_truth/waypoint",
-  "frame": "map",
-  "marks": [
-    {
-      "stamp_ns": 1785415036091702448,
-      "index": 0,
-      "label": "1",
-      "x": 0.0,
-      "y": 0.0
-    },
-    {
-      "stamp_ns": 1785415051234567890,
-      "index": 1,
-      "label": "2",
-      "x": 1.0,
-      "y": 0.0
-    }
-  ]
-}
-Coordinates for all Waypoints
-
-{"stamp_ns": t,       "index": n,"label": "1","x": 0.0,"y": 0.0}
-{"stamp_ns": t,       "index": n,"label": "2","x": 0.0,"y": 1.0}      
-{"stamp_ns": t,       "index": n,"label": "3","x": 0.0,"y": 2.0}
-{"stamp_ns": t,       "index": n,"label": "4","x": -1.0,"y": 0.0}
-{"stamp_ns": t,       "index": n,"label": "5","x": -1.0,"y": 1.0}
-{"stamp_ns": t,       "index": n,"label": "6","x": -1.0,"y": 2.0}
-{"stamp_ns": t,       "index": n,"label": "7","x": -2.0,"y": 0.0}
-{"stamp_ns": t,       "index": n,"label": "8","x": -2.0,"y": 1.0}
-{"stamp_ns": t,       "index": n,"label": "9","x": -2.0,"y": 2.0}    
-{"stamp_ns": t,       "index": n,"label": "10","x": -3.0,"y": 0.0}
-{"stamp_ns": t,       "index": n,"label": "11","x": -3.0,"y": 1.0}
-{"stamp_ns": t,       "index": n,"label": "12","x": -3.0,"y": 2.0}
-{"stamp_ns": t,       "index": n,"label": "13","x": -4.0,"y": 0.0}
-{"stamp_ns": t,       "index": n,"label": "14","x": -4.0,"y": 1.0}
-{"stamp_ns": t,       "index": n,"label": "15","x": -4.0,"y": 2.0}
-
-
-
-## Headless bag benchmarks on Raspberry PI
-
-`scripts/robot_bag_benchmark.sh`
-
-Use `scripts/robot_bag_benchmark.sh` to replay a recorded run through a fresh
-SLAM pipeline on the Raspberry Pi. The script starts
-resource monitoring, excludes recorded derived topics, and exits automatically
-after playback. See [`evaluation.md`](evaluation.md#benchmark-recorded-bags-on-the-raspberry-pi)
-for commands and the Foxglove trade-off.
-
-
-
-## Lichtblick/Foxglove connection
-
-The bridge listens on port `8766`. Add a Foxglove WebSocket connection in
-Lichtblick using:
+Connect Lichtblick to:
 
 ```text
 ws://<robot-ip>:8766
 ```
 
+Use `/camera/image_raw/compressed` with `/camera/camera_info` for the camera
+panel. The topic allowlist is in
+`src/xgo_driver_bridge/config/foxglove_bridge_robot.yaml`.
+
+## Record and copy a run
+
+With bringup already running:
+
+```bash
+bash scripts/record_robot_run.sh RUN_NAME
+```
+
+Press `Ctrl+C` once to finalize the bag, resource summary, and battery summary.
+Copy it from the laptop with:
+
+```bash
+scp -r pi@ROBOT_HOST:~/robot_sim_sose/evaluation/runs/RUN_NAME \
+  evaluation/runs/
+```
+
+Waypoint labeling and offline benchmarks are described in
+[the evaluation guide](evaluation.md).
+
 ## Save a map
 
-While `/map` is actively being published:
+While `/map` is being published:
 
 ```bash
 bash scripts/robot_stack.sh save-map
 ```
 
-The default output is `evaluation/results/live/maps/xgo_map.{yaml,pgm}`. A map
-saver timeout usually means `/map` is absent, uses incompatible QoS, or the
-mapper/occupancy-grid publisher has already stopped.
-
-
-
-
+The default output is `evaluation/results/live/maps/xgo_map.{yaml,pgm}`.
 
 ## Common failures
 
-- **No complete XGO auto-feedback frame:** ensure the bridge uses
-  `xgo_imu_read_mode:=orientation_registers`, verify UART host setup, and stop
-  every other serial consumer.
-- **Random or jumping orientation:** verify the configured robot model and
-  controller firmware, then inspect the raw pitch/roll/yaw diagnostic before
-  blaming SLAM.
-- **RViz queue full or no map:** verify one consistent clock, the complete
-  `map -> odom -> base_link -> laser` TF chain, scan timestamps, and the mapper's
-  configured scan topic.
-- **Camera discovered but cannot be opened:** pass the complete Raspberry Pi
-  media graph, run only one camera process, and ensure the container uses the
-  Raspberry Pi libcamera stack built by the robot Dockerfile.
-- **Foxglove parameter timeout for the bridge:** this is often secondary to a
-  blocked serial callback. Diagnose the XGO serial owner and data first.
+- **No XGO data:** stop other users of `/dev/ttyAMA0` and verify the host UART.
+- **No map:** check the selected scan topic and the complete
+  `map -> odom -> base_link -> laser` transform chain.
+- **Cartographer drops earlier points:** inspect LaserScan timestamps and enable
+  scan normalization for affected legacy bags.
+- **No camera:** ensure only one camera process runs and all Pi media devices
+  are available inside the container.
+- **Wrong robot receives commands:** verify robot IP, `ROS_DOMAIN_ID`, Foxglove
+  connection, and `/cmd_vel` subscribers before enabling motion.

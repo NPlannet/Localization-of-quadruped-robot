@@ -1,0 +1,11 @@
+run_name=rtabmap_filtered_run4
+mode=attach_to_existing_bringup
+record_camera=true
+resource_interval_s=1.0
+ros_domain_id=61
+started_at=2026-08-05T12:00:00+00:00
+foxglove_detected=true
+slam_toolbox_detected=false
+cartographer_detected=false
+rtabmap_detected=false
+dynamic_filter_detected=true

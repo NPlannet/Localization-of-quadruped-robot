@@ -1,0 +1,125 @@
+{
+  "label": "bag_cartographer_filtered_rtab_filtered_run_wp_1_run005",
+  "started_at": "2026-08-11T15:16:08.900+00:00",
+  "ended_at": "2026-08-11T15:22:37.110+00:00",
+  "duration_s": 388.21,
+  "sample_interval_s": 1.0,
+  "sample_count": 388,
+  "logical_cpu_count": 4,
+  "definitions": {
+    "system_cpu_percent": "Busy fraction of all logical CPUs together; 100% means the entire Raspberry Pi CPU is busy.",
+    "cpu_percent_one_core": "Top-style process CPU; 100% equals one fully occupied logical CPU and a multithreaded component can exceed 100%.",
+    "cpu_percent_total_capacity": "Process CPU divided by logical_cpu_count; 100% equals all logical CPUs fully occupied.",
+    "rss_mb": "Resident memory. Component totals sum process RSS and can double-count shared library pages."
+  },
+  "system": {
+    "cpu_percent": {
+      "mean": 57.459,
+      "max": 100.0
+    },
+    "memory_used_mb": {
+      "mean": 583.822,
+      "max": 638.863
+    },
+    "temperature_c": {
+      "mean": 59.892,
+      "max": 65.731
+    }
+  },
+  "components": {
+    "bag_player": {
+      "cpu_percent_one_core": {
+        "mean": 5.965,
+        "max": 60.002
+      },
+      "cpu_percent_total_capacity": {
+        "mean": 1.491,
+        "max": 15.001
+      },
+      "rss_mb": {
+        "mean": 83.424,
+        "max": 84.539
+      },
+      "max_process_count": 1
+    },
+    "cartographer": {
+      "cpu_percent_one_core": {
+        "mean": 136.864,
+        "max": 315.23
+      },
+      "cpu_percent_total_capacity": {
+        "mean": 34.216,
+        "max": 78.808
+      },
+      "rss_mb": {
+        "mean": 117.577,
+        "max": 139.297
+      },
+      "max_process_count": 2
+    },
+    "dynamic_filter": {
+      "cpu_percent_one_core": {
+        "mean": 39.293,
+        "max": 75.004
+      },
+      "cpu_percent_total_capacity": {
+        "mean": 9.823,
+        "max": 18.751
+      },
+      "rss_mb": {
+        "mean": 74.098,
+        "max": 74.227
+      },
+      "max_process_count": 1
+    },
+    "offline_odom": {
+      "cpu_percent_one_core": {
+        "mean": 20.914,
+        "max": 63.003
+      },
+      "cpu_percent_total_capacity": {
+        "mean": 5.229,
+        "max": 15.751
+      },
+      "rss_mb": {
+        "mean": 72.565,
+        "max": 72.648
+      },
+      "max_process_count": 1
+    },
+    "ros_launch": {
+      "cpu_percent_one_core": {
+        "mean": 1.845,
+        "max": 99.002
+      },
+      "cpu_percent_total_capacity": {
+        "mean": 0.461,
+        "max": 24.75
+      },
+      "rss_mb": {
+        "mean": 43.536,
+        "max": 43.762
+      },
+      "max_process_count": 1
+    },
+    "waypoint_evaluator": {
+      "cpu_percent_one_core": {
+        "mean": 23.281,
+        "max": 63.003
+      },
+      "cpu_percent_total_capacity": {
+        "mean": 5.82,
+        "max": 15.751
+      },
+      "rss_mb": {
+        "mean": 72.403,
+        "max": 73.695
+      },
+      "max_process_count": 1
+    }
+  },
+  "files": {
+    "system_samples": "system.csv",
+    "process_samples": "processes.csv"
+  }
+}

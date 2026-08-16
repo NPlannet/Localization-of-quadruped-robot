@@ -1,0 +1,95 @@
+{
+  "label": "bag_slam_toolbox_raw_rtabmap_semistatic_filtered_run1_run007",
+  "started_at": "2026-08-10T15:00:16.144+00:00",
+  "ended_at": "2026-08-10T15:00:19.554+00:00",
+  "duration_s": 3.41,
+  "sample_interval_s": 1.0,
+  "sample_count": 3,
+  "logical_cpu_count": 4,
+  "definitions": {
+    "system_cpu_percent": "Busy fraction of all logical CPUs together; 100% means the entire Raspberry Pi CPU is busy.",
+    "cpu_percent_one_core": "Top-style process CPU; 100% equals one fully occupied logical CPU and a multithreaded component can exceed 100%.",
+    "cpu_percent_total_capacity": "Process CPU divided by logical_cpu_count; 100% equals all logical CPUs fully occupied.",
+    "rss_mb": "Resident memory. Component totals sum process RSS and can double-count shared library pages."
+  },
+  "system": {
+    "cpu_percent": {
+      "mean": 24.38,
+      "max": 43.577
+    },
+    "memory_used_mb": {
+      "mean": 383.766,
+      "max": 418.082
+    },
+    "temperature_c": {
+      "mean": 47.225,
+      "max": 47.712
+    }
+  },
+  "components": {
+    "offline_odom": {
+      "cpu_percent_one_core": {
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "cpu_percent_total_capacity": {
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "rss_mb": {
+        "mean": 30.535,
+        "max": 30.535
+      },
+      "max_process_count": 1
+    },
+    "ros_launch": {
+      "cpu_percent_one_core": {
+        "mean": 54.333,
+        "max": 100.0
+      },
+      "cpu_percent_total_capacity": {
+        "mean": 13.583,
+        "max": 25.0
+      },
+      "rss_mb": {
+        "mean": 43.049,
+        "max": 71.867
+      },
+      "max_process_count": 1
+    },
+    "slam_toolbox": {
+      "cpu_percent_one_core": {
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "cpu_percent_total_capacity": {
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "rss_mb": {
+        "mean": 34.793,
+        "max": 34.793
+      },
+      "max_process_count": 1
+    },
+    "waypoint_evaluator": {
+      "cpu_percent_one_core": {
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "cpu_percent_total_capacity": {
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "rss_mb": {
+        "mean": 22.184,
+        "max": 22.184
+      },
+      "max_process_count": 1
+    }
+  },
+  "files": {
+    "system_samples": "system.csv",
+    "process_samples": "processes.csv"
+  }
+}

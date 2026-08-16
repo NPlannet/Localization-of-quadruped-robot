@@ -1,20 +1,26 @@
 # ROS / colcon build outputs
-robot_sim_sose/build/
-robot_sim_sose/install/
-robot_sim_sose/log/
-robot_sim_sose/evaluation_runs/
-robot_sim_sose/evaluation/runs/
-robot_sim_sose/evaluation/datasets/**/*.mcap
-robot_sim_sose/evaluation/results/**/*.db
+**/build/
+**/install/
+**/log/
 
-# images made with the camera
+# Recorded and generated evaluation data
+**/evaluation/runs/
+**/evaluation_runs/
+*.mcap
+*.db
+*.db3
+*.db-shm
+*.db-wal
+
+# Legacy recording stored outside evaluation/runs
+/robot_sim_sose/evaluation/rtab_filtered_run_wp_3/
+
+# Camera captures are local; final evaluation plots may be committed.
 *.png
 *.jpg
+!**/evaluation/results/**/*.png
 
-# Presentation plots are deliberate evaluation artifacts.
-!robot_sim_sose/evaluation/results/**/*.png
-
-# Python cache files
+# Python caches
 __pycache__/
 *.py[cod]
 
@@ -27,13 +33,3 @@ __pycache__/
 .DS_Store
 *~
 *.swp
-
-
-/robot_sim_sose/bag/
-/robot_sim_sose/w1/
-/robot_sim_sose/maps/*.db
-/robot_sim_sose/evaluation_runs/
-
-
-/robot_sim_sose/evaluation
-/robot_sim_sose/evaluation/rtab_filtered_run_wp_3

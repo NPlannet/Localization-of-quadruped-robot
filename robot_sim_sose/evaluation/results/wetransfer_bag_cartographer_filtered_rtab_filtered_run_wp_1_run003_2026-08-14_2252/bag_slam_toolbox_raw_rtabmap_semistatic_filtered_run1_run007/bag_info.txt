@@ -1,0 +1,30 @@
+
+Files:             bag_0.mcap
+Bag size:          1.2 GiB
+Storage id:        mcap
+ROS Distro:        jazzy
+Duration:          481.285001392s
+Start:             Aug  6 2026 09:31:58.702555908 (1786008718.702555908)
+End:               Aug  6 2026 09:39:59.987557300 (1786009199.987557300)
+Messages:          82657
+Topic information: Topic: /battery_state | Type: sensor_msgs/msg/BatteryState | Count: 324 | Serialization Format: cdr
+                   Topic: /camera/camera_info | Type: sensor_msgs/msg/CameraInfo | Count: 14441 | Serialization Format: cdr
+                   Topic: /camera/image_raw/compressed | Type: sensor_msgs/msg/CompressedImage | Count: 14435 | Serialization Format: cdr
+                   Topic: /cmd_vel | Type: geometry_msgs/msg/Twist | Count: 743 | Serialization Format: cdr
+                   Topic: /diagnostics | Type: diagnostic_msgs/msg/DiagnosticArray | Count: 218 | Serialization Format: cdr
+                   Topic: /ground_truth/waypoint | Type: std_msgs/msg/String | Count: 15 | Serialization Format: cdr
+                   Topic: /imu/data | Type: sensor_msgs/msg/Imu | Count: 6524 | Serialization Format: cdr
+                   Topic: /map | Type: nav_msgs/msg/OccupancyGrid | Count: 137 | Serialization Format: cdr
+                   Topic: /odom | Type: nav_msgs/msg/Odometry | Count: 6523 | Serialization Format: cdr
+                   Topic: /parameter_events | Type: rcl_interfaces/msg/ParameterEvent | Count: 0 | Serialization Format: cdr
+                   Topic: /rosout | Type: rcl_interfaces/msg/Log | Count: 563 | Serialization Format: cdr
+                   Topic: /rtabmap/info | Type: rtabmap_msgs/msg/Info | Count: 342 | Serialization Format: cdr
+                   Topic: /rtabmap/mapGraph | Type: rtabmap_msgs/msg/MapGraph | Count: 137 | Serialization Format: cdr
+                   Topic: /scan | Type: sensor_msgs/msg/LaserScan | Count: 4750 | Serialization Format: cdr
+                   Topic: /scan_filtered | Type: sensor_msgs/msg/LaserScan | Count: 4298 | Serialization Format: cdr
+                   Topic: /tf | Type: tf2_msgs/msg/TFMessage | Count: 16159 | Serialization Format: cdr
+                   Topic: /tf_static | Type: tf2_msgs/msg/TFMessage | Count: 2 | Serialization Format: cdr
+                   Topic: /xgo/applied_vel | Type: geometry_msgs/msg/TwistStamped | Count: 6526 | Serialization Format: cdr
+                   Topic: /xgo/yaw_deg | Type: std_msgs/msg/Float32 | Count: 6520 | Serialization Format: cdr
+Service:           0
+Service information: 

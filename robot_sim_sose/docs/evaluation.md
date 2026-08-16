@@ -1,363 +1,166 @@
 # Recording and Localization Evaluation
 
-The evaluation layout is documented in [`../evaluation/README.md`](../evaluation/README.md).
-The W1 replay launches default to:
+The evaluation compares SLAM Toolbox, Cartographer, and RTAB-Map using the same
+recorded sensor data, with the dynamic LiDAR filter enabled and disabled.
+
+## Data layout
 
 ```text
-evaluation/datasets/w1/bag/
-evaluation/datasets/w1/waypoints.json
-evaluation/results/w1/
+evaluation/
+├── datasets/<dataset>/   Bag sidecars and externally stored inputs
+├── runs/<run>/           New recordings and temporary evaluations
+└── results/<experiment>/ Retained metrics, maps, plots, and summaries
 ```
 
-## Build
+Raw bags and RTAB-Map databases are Git-ignored and must be archived
+separately.
 
-Inside the development container:
+## Record a robot dataset
 
-```bash
-source /opt/ros/jazzy/setup.bash
-colcon build --symlink-install --packages-select \
-  xgo_driver_bridge dynamic_scan_filter xgo_description
-source install/setup.bash
-```
-
-## Replay W1
-
-Run each algorithm with the raw scan and then the filtered scan. The launch
-files select distinct default metric/database names, so variants do not
-overwrite one another.
-
-```bash
-# SLAM Toolbox
-ros2 launch xgo_description bag_replay.launch.py use_dynamic_filter:=false
-ros2 launch xgo_description bag_replay.launch.py use_dynamic_filter:=true
-
-# Cartographer
-ros2 launch xgo_description bag_replay_cartographer.launch.py use_dynamic_filter:=false
-ros2 launch xgo_description bag_replay_cartographer.launch.py use_dynamic_filter:=true
-
-# RTAB-Map with RGB loop recognition
-ros2 launch xgo_description bag_replay_rtabmap.launch.py \
-  use_dynamic_filter:=false use_camera:=true
-ros2 launch xgo_description bag_replay_rtabmap.launch.py \
-  use_dynamic_filter:=true use_camera:=true
-```
-
-For timing/resource measurements, disable visualization. For visual inspection,
-enable it explicitly. Relevant arguments include `use_rviz`, `use_image_view`,
-and, for RTAB-Map, `use_rtabmap_viz`.
-
-Override any input or output when testing another bag:
-
-```bash
-ros2 launch xgo_description bag_replay.launch.py \
-  bag_path:=/absolute/path/to/bag \
-  waypoints_file:=/absolute/path/to/waypoints.json \
-  evaluation_output_path:=/absolute/path/to/result.json
-```
-
-## What the waypoint metric measures
-
-Each waypoint sidecar entry contains a bag timestamp and a surveyed global
-position. Around that timestamp, the evaluator samples the SLAM `map ->
-base_link` transform 11 times over a centered one-second settling window. It
-uses the median X/Y and circular-mean heading to reduce single-sample jitter.
-
-The arbitrary SLAM map origin is not ground truth. The default `se2` alignment
-therefore fits one rigid 2D rotation and translation from all estimated points
-to the surveyed frame. It never changes scale. The JSON retains raw poses and
-errors as well as aligned errors, successful/failed observations, the fitted
-transform, summary statistics, and revisit drift.
-
-For the presentation, compare mean absolute error (MAE), RMSE, median error,
-maximum error, successful observations, and revisit drift. Do not present the
-old p95 field for this 12-waypoint sample; one order statistic is not very
-informative at that size. Compare all methods on the same common waypoint set.
-
-The W1 bag does not contain wheel/leg odometry. During replay,
-`xgo_offline_odom_node` reconstructs `odom -> base_link` by integrating the
-recorded applied velocity and using recorded IMU orientation for heading. This
-is intentionally an approximation and should be stated as a limitation when
-generalizing replay accuracy to live robot operation.
-
-Useful evaluator overrides:
-
-```bash
-# Inspect errors without aligning the coordinate systems.
-ros2 launch xgo_description bag_replay.launch.py evaluation_alignment_mode:=none
-
-# Widen the stable-pose window.
-ros2 launch xgo_description bag_replay.launch.py \
-  evaluation_settling_window_sec:=1.5 \
-  evaluation_window_sample_count:=15 \
-  evaluation_min_window_samples:=7
-```
-
-## Loop-closure comparison
-
-SLAM Toolbox replay parameters are in:
-
-```text
-src/xgo_description/config/slam_toolbox_lifelong.yaml
-src/xgo_description/config/slam_toolbox_lifelong_raw.yaml
-```
-
-Set `do_loop_closing` to the same value in both files for a raw-versus-filtered
-comparison. It is currently enabled.
-
-Cartographer replay parameters are in:
-
-```text
-src/xgo_description/config/cartographer_replay_2d.lua
-```
-
-`POSE_GRAPH.optimize_every_n_nodes` controls how frequently the pose graph is
-optimized; it is not a direct equivalent of SLAM Toolbox's loop-closure switch.
-Cartographer constraint-builder parameters govern candidate loop closures.
-
-RTAB-Map uses geometric scan constraints and can additionally use RGB
-appearance for loop recognition. Its launch arguments include `detection_rate`
-and `visual_loop_threshold`. Keep camera usage fixed when comparing its scan
-variants.
-
-## Plot the existing runs
-
-```bash
-python3 scripts/plot_localization_accuracy.py
-python3 scripts/plot_localization_accuracy.py --metric rmse
-python3 scripts/plot_localization_accuracy.py --metric max
-```
-
-The default output is
-`evaluation/results/w1/plots/localization_accuracy_mae.png`. Supported metrics
-are `mae`, `rmse`, `median`, `max`, and `revisit`.
-
-## Record a physical-robot dataset without SLAM
-
-Start the normal robot bringup with no mapper:
+Start robot bringup without SLAM so every algorithm can later process the same
+original inputs:
 
 ```bash
 ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
-  enable_motion:=true \
-  start_dynamic_filter:=true \
-  start_foxglove:=true \
-  slam_method:=none
+  enable_motion:=true slam_method:=none \
+  start_dynamic_filter:=true start_foxglove:=true
 ```
 
-In another shell in the same container:
+In another container shell:
 
 ```bash
-bash scripts/record_robot_run.sh sensor_only_run1
+bash scripts/record_robot_run.sh RUN_NAME
 ```
 
-This records `/scan`, `/scan_filtered`, `/cmd_vel`, `/imu/data`, `/odom`, TF,
-`/battery_state`, `/ground_truth/waypoint`, camera topics, and diagnostics while
-independently sampling CPU, RAM, and battery percentage. Press `Ctrl+C` once to
-finalize the MCAP. It does not stop the existing bringup. Output is written to
-`evaluation/runs/<run_name>/`:
+The recorder stores the bag, ROS inventory, CPU/RAM samples, and battery
+samples under `evaluation/runs/<run_name>/`. Press `Ctrl+C` once to finalize it.
+The running sensor stack is not stopped.
 
-```text
-<run_name>/
-├── bag/                 MCAP sensor and algorithm topics
-├── resources/
-│   ├── system.csv       Whole-system CPU, RAM, temperature, and frequency
-│   ├── processes.csv    Per-component CPU and resident memory
-│   └── summary.json
-├── battery/
-│   ├── samples.csv      Timestamped BatteryState values
-│   └── summary.json     Start/end percentage and observed discharge rate
-├── bag_info.txt
-├── ros_nodes.txt
-├── ros_topics.txt
-└── run_config.txt
-```
+Important recorded inputs include `/scan`, `/imu/data`, `/xgo/applied_vel`,
+`/tf_static`, camera topics, and `/ground_truth/waypoint`. Derived topics are
+recorded for inspection but are excluded from clean benchmark replay.
 
-### Mark surveyed waypoints while recording
+## Mark ground-truth waypoints
 
-The normal robot bringup starts a small waypoint timestamp node. In Lichtblick,
-add a **Publish** panel and configure one button as follows:
+In Lichtblick, create a Publish button:
 
 - Topic: `/ground_truth/waypoint_trigger`
-- Message type: `std_msgs/msg/Empty`
+- Type: `std_msgs/msg/Empty`
 - Message: `{}`
-- Button label: `Mark waypoint`
 
-Click the button once whenever the robot is stationary on a surveyed waypoint.
-The node reads the robot's ROS clock at that instant and publishes a
-`std_msgs/msg/String` on `/ground_truth/waypoint`, for example:
+Press it once while the robot is stationary on each surveyed point. The robot
+node writes the current ROS timestamp to `/ground_truth/waypoint` and the bag
+records it.
 
-```text
-data: '{"stamp_ns":1785415036091702448}'
+After recording, create `waypoints.json` beside the bag:
+
+```json
+{
+  "topic": "/ground_truth/waypoint",
+  "frame": "map",
+  "marks": [
+    {"stamp_ns": 1785415036091702448, "index": 0, "label": "1", "x": 0.0, "y": 0.0}
+  ]
+}
 ```
 
-The bag recording scripts already include `/ground_truth/waypoint`. Later, copy
-each `stamp_ns` into `waypoints.json` and add the known `x`, `y`, and label. You
-can verify the button before recording with:
+The timestamp comes from the bag; `label`, `x`, and `y` come from the surveyed
+waypoint layout.
+
+## Run one clean benchmark
+
+Run on the Raspberry Pi to measure performance on the target CPU:
+
+The arguments are the SLAM method (`slam_toolbox`, `cartographer`, or
+`rtabmap`), scan variant (`raw` or `filtered`), bag path, and an optional
+waypoint file.
+
+Example:
 
 ```bash
-ros2 topic echo /ground_truth/waypoint
-```
-
-Using a trigger is intentional: a static Lichtblick message cannot insert the
-robot's current ROS timestamp reliably, especially if Lichtblick runs on a
-different computer. The marker node assigns the timestamp in the same clock
-domain as the recorded sensor data.
-
-The XGO SDK currently supplies battery percentage but not measured voltage or
-current. Consequently, this is a coarse state-of-charge comparison rather than
-an energy measurement in watt-hours. Use equal-duration trials with the same
-starting charge, route, gait, payload, camera/visualization settings, and idle
-warm-up. Short runs may show no percentage change because the controller value
-is quantized; longer repeated runs are more useful.
-
-Run at least three trials per condition, use the same route and speed, start
-with an empty/independent map or database, and avoid running RViz/Foxglove when
-measuring feasibility on the Raspberry Pi unless visualization overhead is
-explicitly part of the test.
-
-
-## IMPORTANT : Benchmark recorded bags on the Raspberry Pi
-
-The robot benchmark uses only `xgo_driver_bridge` and the installed mapping
-packages; it does not build or install `xgo_description`, Gazebo, or RViz.
-
-```bash
-# SLAM Toolbox, recomputing odometry and filtering from original inputs
-bash scripts/robot_bag_benchmark.sh \
-  slam_toolbox filtered \
-  evaluation/datasets/my_run/bag \
-  evaluation/datasets/my_run/waypoints.json
-
-# Cartographer, raw scan
 bash scripts/robot_bag_benchmark.sh \
   cartographer raw \
-  evaluation/datasets/my_run/bag \
-  evaluation/datasets/my_run/waypoints.json
-
-# RTAB-Map with RGB appearance recognition
-bash scripts/robot_bag_benchmark.sh \
-  rtabmap filtered \
-  evaluation/datasets/my_run/bag \
-  evaluation/datasets/my_run/waypoints.json
+  evaluation/runs/my_run/bag \
+  evaluation/runs/my_run/waypoints.json
 ```
 
-Omit the final waypoint argument for compute-only runs. RTAB-Map uses the
-camera by default; set `USE_CAMERA=false` to measure its LiDAR-only variant.
-Legacy W1 scans require the normalizer:
+The benchmark replays only original inputs:
+
+```text
+/scan  /imu/data  /xgo/applied_vel  /tf_static
+/camera/image_raw/compressed   # RTAB-Map RGB only
+```
+
+It rebuilds `/odom`, runs the current filter for a filtered trial, starts a
+fresh mapper, measures resources, and evaluates waypoints. Recorded `/odom`,
+`/tf`, `/scan_filtered`, `/map`, and old mapper outputs are not replayed.
+
+Legacy bags with overlapping per-beam LiDAR timestamps, including W1, require:
 
 ```bash
 NORMALIZE_SCAN=true bash scripts/robot_bag_benchmark.sh \
-  cartographer raw evaluation/datasets/w1/bag \
-  evaluation/datasets/w1/waypoints.json
+  cartographer raw /path/to/bag /path/to/waypoints.json
 ```
 
-Benchmark directories follow a collision-safe convention that includes the
-source recording, such as `bag_cartographer_raw_my_run_run001`. Set
-`RUN_TAG=room2` to add another label before the unique run number.
+## Run the complete comparison
 
-The player uses an explicit input allowlist:
-
-```text
-/scan
-/imu/data
-/xgo/applied_vel
-/tf_static
-/camera/image_raw/compressed    # RTAB-Map RGB only
-```
-
-Recorded `/odom`, `/tf`, `/scan_filtered`, `/map`, and mapper diagnostics are
-never replayed. `/odom` and `odom -> base_link` are rebuilt from the recorded
-applied velocity and IMU, and a selected filtered run always executes the
-current dynamic filter on the raw `/scan`. Keep the original bag unchanged;
-there is no need to create a second bag with topics deleted.
-
-New benchmark results are written to `evaluation/runs/<run_name>/`, including
-the input bag inventory, exact configuration, launch log, component/system
-resource samples, RTAB-Map database where applicable, and waypoint metrics
-when a sidecar was supplied.
-
-### Run the complete benchmark matrix
-
-The matrix runner executes every configured algorithm and scan variant for one
-bag, checkpoints after every job, and can resume after `Ctrl+C` or a reboot.
-Copy the template and edit the experiment name, bag path, and waypoint path:
+Copy and edit the matrix template:
 
 ```bash
-cp evaluation/templates/benchmark_matrix.example.yaml \
-  evaluation/benchmark_matrix.yaml
-nano evaluation/benchmark_matrix.yaml
+cp evaluation/templates/benchmark_matrix.example.yaml evaluation/benchmark.yaml
+python3 scripts/run_benchmark_matrix.py evaluation/benchmark.yaml --dry-run
+python3 scripts/run_benchmark_matrix.py evaluation/benchmark.yaml
 ```
 
-Preview the order without creating results:
+Running the last command again resumes unfinished work. Check progress with:
 
 ```bash
-python3 scripts/run_benchmark_matrix.py \
-  evaluation/benchmark_matrix.yaml --dry-run
+python3 scripts/run_benchmark_matrix.py evaluation/benchmark.yaml --status
 ```
 
-Start the matrix. Repeating the same command resumes pending or interrupted
-jobs and skips completed jobs:
+The standard design is three algorithms × raw/filtered × five repetitions.
+The runner randomizes condition order, applies cooldown/temperature checks,
+saves configuration snapshots, and writes per-run and aggregate CSV summaries.
+
+Do not edit a matrix configuration after the experiment state has been
+created. Use a new experiment name for changed settings.
+
+## Accuracy metric
+
+At every marked timestamp, the evaluator samples `map -> base_link` over a
+short stationary window and uses a robust central pose. Because every SLAM map
+has an arbitrary origin, the default evaluation fits one rigid 2D SE(2)
+rotation and translation to the surveyed points. It never fits scale.
+
+Report:
+
+- mean absolute error (MAE);
+- RMSE and median error;
+- maximum error;
+- successful waypoint count; and
+- drift between repeated visits to the same waypoint.
+
+Do not use p95 as a headline metric for a small waypoint set. Compare all
+methods on the same common observations and retain individual-run values, not
+only their average.
+
+The reconstructed odometry integrates applied velocity and uses IMU
+orientation. It is an approximation, not measured displacement or ground
+truth, and should be stated as a limitation.
+
+## Fair-comparison rules
+
+- Use the same bag, waypoints, playback rate, and algorithm configuration.
+- Start each run with an independent map or RTAB-Map database.
+- Keep camera use fixed when comparing RTAB-Map variants.
+- Disable Foxglove/RViz for primary CPU measurements.
+- Use at least three runs; five are used by the default matrix.
+- Save the Git commit and configuration snapshot with every experiment.
+
+For visual desktop inspection, the three replay launches are:
 
 ```bash
-python3 scripts/run_benchmark_matrix.py evaluation/benchmark_matrix.yaml
+ros2 launch xgo_description bag_replay.launch.py
+ros2 launch xgo_description bag_replay_cartographer.launch.py
+ros2 launch xgo_description bag_replay_rtabmap.launch.py use_camera:=true
 ```
-
-Inspect progress or explicitly retry failed jobs:
-
-```bash
-python3 scripts/run_benchmark_matrix.py \
-  evaluation/benchmark_matrix.yaml --status
-python3 scripts/run_benchmark_matrix.py \
-  evaluation/benchmark_matrix.yaml --retry-failed
-```
-
-The default example creates 30 jobs: three algorithms, raw and filtered scans,
-and five repetitions. Conditions are shuffled within each repetition using the
-saved random seed. A temperature gate and cooldown reduce systematic thermal
-bias, while Foxglove remains disabled for comparable CPU measurements.
-
-Matrix outputs use this hierarchy:
-
-```text
-evaluation/results/<experiment>/
-├── experiment.yaml
-├── experiment_metadata.yaml
-├── configuration_snapshot/
-├── state.yaml
-├── summary.csv                 Per-run measurements and status
-├── aggregate_summary.csv       Mean and standard deviation per condition
-├── runner.log
-└── bags/<bag>/<algorithm>/<raw-or-filtered>/<unique-run>/
-    ├── metrics/waypoint_accuracy.json
-    ├── resources/summary.json
-    ├── resources/system.csv
-    ├── resources/processes.csv
-    ├── run_config.txt
-    └── launch.log
-```
-
-Do not change a matrix YAML after its state file has been created. Use a new
-`experiment.name` for a changed protocol; this prevents accidentally combining
-results produced with different settings. The runner records the Git state and
-copies the relevant mapping configurations once per experiment.
-
-### Foxglove during CPU trials
-
-Headless operation is the default and should be used for the primary compute
-comparison. To inspect a separately labelled visual run:
-
-```bash
-RUN_TAG=visual START_FOXGLOVE=true bash scripts/robot_bag_benchmark.sh \
-  slam_toolbox filtered /path/to/bag
-```
-
-Connect Lichtblick to `ws://<robot-ip>:8766`. Enabling the bridge for every run
-is a valid end-to-end system comparison, but it is not a pure mapper comparison:
-network serialization depends on map size, diagnostics, and camera traffic, so
-the overhead need not be identical across algorithms. Do not mix headless and
-Foxglove-enabled trials in one aggregate.
-
-The benchmark does not replay the historical battery topic because that would
-describe the original walk, not current Pi consumption. It also does not start
-the live XGO bridge, since that would create conflicting IMU and odometry
-publishers. True replay-energy measurement requires an external Pi power meter;
-CPU, RAM, temperature, and frequency are measured directly by the script.

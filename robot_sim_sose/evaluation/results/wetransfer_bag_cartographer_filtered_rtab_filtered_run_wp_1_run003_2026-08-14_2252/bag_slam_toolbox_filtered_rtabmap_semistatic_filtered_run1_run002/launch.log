@@ -1,0 +1,197 @@
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-08-10-15-52-17-406584-robodoge1-8979
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: Headless bag benchmark: method=slam_toolbox, scan=/scan_filtered, camera=False, foxglove=False. Recorded /odom, /tf, /scan_filtered, /map, and SLAM outputs are excluded.
+[INFO] [xgo_offline_odom_node-1]: process started with pid [8995]
+[INFO] [dynamic_scan_filter_node-2]: process started with pid [8996]
+[INFO] [async_slam_toolbox_node-3]: process started with pid [8997]
+[INFO] [waypoint_accuracy_node-4]: process started with pid [8998]
+[async_slam_toolbox_node-3] [INFO] [1786377138.769819127] [slam_toolbox]: Configuring
+[async_slam_toolbox_node-3] [INFO] [1786377138.799563055] [slam_toolbox]: Using solver plugin solver_plugins::CeresSolver
+[async_slam_toolbox_node-3] [INFO] [1786377138.918949800] [slam_toolbox]: Activating
+[waypoint_accuracy_node-4] [INFO] [1786377139.793307839] [waypoint_accuracy_monitor]: Waypoint accuracy monitor started for 15 marks using map -> base_link; 1.00s/11 sample window, alignment=se2.
+[xgo_offline_odom_node-1] [INFO] [1786377139.831786996] [xgo_offline_odom]: Offline odometry started: /xgo/applied_vel + /imu/data -> /odom.
+[dynamic_scan_filter_node-2] [INFO] [1786377139.867747659] [dynamic_scan_filter]: Dynamic scan filter started: /scan -> /scan_filtered, tracking in odom, markers on /dynamic_scan_filter/cluster_markers.
+[INFO] [ros2-5]: process started with pid [9060]
+[ros2-5] [INFO] [1786377144.528591980] [rosbag2_player]: Set rate to 1
+[ros2-5] [INFO] [1786377144.841638536] [rosbag2_player]: Overriding QoS profile for topic /scan
+[ros2-5] [INFO] [1786377144.852507576] [rosbag2_player]: Overriding QoS profile for topic /imu/data
+[ros2-5] [INFO] [1786377144.856324613] [rosbag2_player]: Overriding QoS profile for topic /xgo/applied_vel
+[ros2-5] [INFO] [1786377144.861170602] [rosbag2_player]: Overriding QoS profile for topic /tf_static
+[ros2-5] [INFO] [1786377144.911805602] [rosbag2_player]: Playback until timestamp: -1
+[xgo_offline_odom_node-1] [INFO] [1786377146.672055213] [xgo_offline_odom]: odom replay pose=(+0.00, +0.00, yaw=-102.0 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[dynamic_scan_filter_node-2] [WARN] [1786377146.998795912] [dynamic_scan_filter]: Could not transform base_laser into odom: "base_laser" passed to lookupTransform argument source_frame does not exist. 
+[async_slam_toolbox_node-3] Registering sensor: [Custom Described Lidar]
+[xgo_offline_odom_node-1] [INFO] [1786377151.721908373] [xgo_offline_odom]: odom replay pose=(+0.00, +0.00, yaw=-106.7 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377155.275176000] [waypoint_accuracy_monitor]: waypoint 1 raw est=(+0.00, +0.00) gt=(+0.00, +0.00), raw error=0.000m, stability=0.000m
+[xgo_offline_odom_node-1] [INFO] [1786377156.771558519] [xgo_offline_odom]: odom replay pose=(+0.00, +0.00, yaw=-111.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377161.771726542] [xgo_offline_odom]: odom replay pose=(-0.28, -0.69, yaw=-111.4 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377166.772348523] [xgo_offline_odom]: odom replay pose=(-0.31, -0.78, yaw=-68.4 deg), cmd=(+0.00 m/s, wz=+0.80 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377171.821163086] [xgo_offline_odom]: odom replay pose=(-0.40, -0.73, yaw=-31.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 502 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377176.821340127] [xgo_offline_odom]: odom replay pose=(-0.23, -0.85, yaw=-37.6 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377179.775067091] [waypoint_accuracy_monitor]: waypoint 2 raw est=(-0.23, -0.85) gt=(+0.00, +1.00), raw error=1.862m, stability=0.000m
+[xgo_offline_odom_node-1] [INFO] [1786377181.872508907] [xgo_offline_odom]: odom replay pose=(-0.14, -0.93, yaw=-43.8 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377186.872543632] [xgo_offline_odom]: odom replay pose=(+0.36, -1.41, yaw=-43.3 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 504 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377191.921157602] [xgo_offline_odom]: odom replay pose=(+0.60, -1.64, yaw=-44.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377196.971964530] [xgo_offline_odom]: odom replay pose=(+0.60, -1.64, yaw=-44.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377201.973659530] [xgo_offline_odom]: odom replay pose=(+0.60, -1.64, yaw=-44.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377207.021549372] [xgo_offline_odom]: odom replay pose=(+0.70, -1.77, yaw=-119.7 deg), cmd=(+0.00 m/s, wz=-0.80 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377212.024169247] [xgo_offline_odom]: odom replay pose=(+0.37, -1.85, yaw=-171.2 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377216.574775278] [waypoint_accuracy_monitor]: waypoint 5 raw est=(+0.47, -1.67) gt=(-1.00, +1.00), raw error=3.046m, stability=0.000m
+[xgo_offline_odom_node-1] [INFO] [1786377217.071783345] [xgo_offline_odom]: odom replay pose=(+0.35, -1.86, yaw=-175.0 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 504 range readings, expected 503
+[async_slam_toolbox_node-3] LaserRangeScan contains 502 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377222.121402161] [xgo_offline_odom]: odom replay pose=(-0.47, -1.92, yaw=-173.8 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377227.122052489] [xgo_offline_odom]: odom replay pose=(-0.67, -1.94, yaw=-173.8 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377232.171559207] [xgo_offline_odom]: odom replay pose=(-0.67, -1.94, yaw=+174.7 deg), cmd=(+0.00 m/s, wz=+0.80 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377237.225097066] [xgo_offline_odom]: odom replay pose=(-0.67, -1.94, yaw=-94.8 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 501 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377242.271841135] [xgo_offline_odom]: odom replay pose=(-0.68, -2.10, yaw=-100.4 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377242.674942911] [waypoint_accuracy_monitor]: waypoint 6 raw est=(-0.48, -2.12) gt=(-1.00, +2.00), raw error=4.151m, stability=0.000m
+[async_slam_toolbox_node-3] LaserRangeScan contains 505 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377247.321654966] [xgo_offline_odom]: odom replay pose=(-0.81, -2.71, yaw=-98.0 deg), cmd=(+0.00 m/s, wz=-0.80 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377252.371955306] [xgo_offline_odom]: odom replay pose=(-0.81, -2.71, yaw=-98.0 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377257.422339028] [xgo_offline_odom]: odom replay pose=(-0.94, -2.91, yaw=-124.9 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 502 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377262.421366281] [xgo_offline_odom]: odom replay pose=(-1.27, -3.31, yaw=-131.9 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377267.424604301] [xgo_offline_odom]: odom replay pose=(-1.27, -3.31, yaw=-115.4 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377270.276199536] [waypoint_accuracy_monitor]: waypoint 9 raw est=(-0.82, -3.29) gt=(-2.00, +2.00), raw error=5.420m, stability=0.000m
+[xgo_offline_odom_node-1] [INFO] [1786377272.472371642] [xgo_offline_odom]: odom replay pose=(-1.27, -3.31, yaw=-119.9 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377277.473151191] [xgo_offline_odom]: odom replay pose=(-1.27, -3.31, yaw=-124.6 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377282.472122657] [xgo_offline_odom]: odom replay pose=(-1.27, -3.31, yaw=-136.9 deg), cmd=(+0.00 m/s, wz=-0.80 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 502 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377287.474286252] [xgo_offline_odom]: odom replay pose=(-1.89, -3.80, yaw=-146.1 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377292.521947454] [xgo_offline_odom]: odom replay pose=(-1.89, -3.80, yaw=-147.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377292.580087687] [waypoint_accuracy_monitor]: waypoint 12 raw est=(-1.12, -4.02) gt=(-3.00, +2.00), raw error=6.308m, stability=0.000m
+[xgo_offline_odom_node-1] [INFO] [1786377297.521782703] [xgo_offline_odom]: odom replay pose=(-1.89, -3.82, yaw=-100.7 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 501 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377302.571596886] [xgo_offline_odom]: odom replay pose=(-2.08, -4.81, yaw=-102.3 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377307.571618394] [xgo_offline_odom]: odom replay pose=(-2.12, -4.95, yaw=-102.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377312.621645466] [xgo_offline_odom]: odom replay pose=(-2.12, -4.95, yaw=-102.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377317.621625956] [xgo_offline_odom]: odom replay pose=(-2.12, -4.95, yaw=-102.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377322.671603269] [xgo_offline_odom]: odom replay pose=(-2.17, -5.07, yaw=-120.4 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377327.721889477] [xgo_offline_odom]: odom replay pose=(-2.21, -5.14, yaw=-164.6 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377332.772442951] [xgo_offline_odom]: odom replay pose=(-2.21, -5.14, yaw=-164.6 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377337.772027387] [xgo_offline_odom]: odom replay pose=(-2.21, -5.14, yaw=-164.6 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 504 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377342.821648201] [xgo_offline_odom]: odom replay pose=(-2.67, -5.11, yaw=+169.3 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377347.871841110] [xgo_offline_odom]: odom replay pose=(-2.69, -5.11, yaw=+130.2 deg), cmd=(+0.00 m/s, wz=+0.80 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377352.921151017] [xgo_offline_odom]: odom replay pose=(-2.69, -5.11, yaw=+134.5 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377354.175894192] [waypoint_accuracy_monitor]: waypoint 14 raw est=(-1.32, -5.59) gt=(-4.00, +1.00), raw error=7.115m, stability=0.000m
+[xgo_offline_odom_node-1] [INFO] [1786377357.921331904] [xgo_offline_odom]: odom replay pose=(-3.10, -4.66, yaw=+132.9 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377362.921536983] [xgo_offline_odom]: odom replay pose=(-3.15, -4.60, yaw=+132.9 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377367.921601439] [xgo_offline_odom]: odom replay pose=(-3.15, -4.60, yaw=+132.9 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377372.971604034] [xgo_offline_odom]: odom replay pose=(-3.15, -4.60, yaw=+132.9 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377378.022714459] [xgo_offline_odom]: odom replay pose=(-3.15, -4.60, yaw=+132.9 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377383.071696669] [xgo_offline_odom]: odom replay pose=(-3.15, -4.60, yaw=-169.3 deg), cmd=(+0.00 m/s, wz=+0.80 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 504 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377388.121752375] [xgo_offline_odom]: odom replay pose=(-3.82, -4.74, yaw=-169.3 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377393.171441127] [xgo_offline_odom]: odom replay pose=(-3.82, -4.74, yaw=-170.9 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377398.171596155] [xgo_offline_odom]: odom replay pose=(-3.82, -4.74, yaw=-175.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377403.221802358] [xgo_offline_odom]: odom replay pose=(-3.82, -4.74, yaw=-179.8 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377408.271641828] [xgo_offline_odom]: odom replay pose=(-3.82, -4.74, yaw=+175.6 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377413.321357767] [xgo_offline_odom]: odom replay pose=(-3.82, -4.74, yaw=+170.9 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377418.321904977] [xgo_offline_odom]: odom replay pose=(-3.82, -4.74, yaw=+166.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377423.322147342] [xgo_offline_odom]: odom replay pose=(-3.52, -4.84, yaw=+166.1 deg), cmd=(-0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377428.321667792] [xgo_offline_odom]: odom replay pose=(-3.30, -4.90, yaw=-114.5 deg), cmd=(+0.00 m/s, wz=+0.80 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377433.371898113] [xgo_offline_odom]: odom replay pose=(-3.30, -4.90, yaw=-112.5 deg), cmd=(+0.00 m/s, wz=-0.80 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 504 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377438.371512662] [xgo_offline_odom]: odom replay pose=(-3.64, -5.27, yaw=-134.5 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377443.422342262] [xgo_offline_odom]: odom replay pose=(-3.71, -5.34, yaw=-143.4 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377448.471618325] [xgo_offline_odom]: odom replay pose=(-3.71, -5.34, yaw=-152.4 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377453.472216096] [xgo_offline_odom]: odom replay pose=(-3.71, -5.34, yaw=-121.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377457.574740974] [waypoint_accuracy_monitor]: waypoint 14 raw est=(-1.85, -6.16) gt=(-4.00, +1.00), raw error=7.474m, stability=0.000m
+[xgo_offline_odom_node-1] [INFO] [1786377458.521744996] [xgo_offline_odom]: odom replay pose=(-3.71, -5.34, yaw=-125.8 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377459.574829212] [waypoint_accuracy_monitor]: waypoint 14 raw est=(-1.85, -6.16) gt=(-4.00, +1.00), raw error=7.474m, stability=0.000m
+[async_slam_toolbox_node-3] LaserRangeScan contains 504 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377463.572787347] [xgo_offline_odom]: odom replay pose=(-3.83, -5.54, yaw=-59.2 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 502 range readings, expected 503
+[async_slam_toolbox_node-3] LaserRangeScan contains 501 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377468.571652530] [xgo_offline_odom]: odom replay pose=(-3.37, -6.28, yaw=-54.8 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377473.621237825] [xgo_offline_odom]: odom replay pose=(-3.37, -6.28, yaw=-137.5 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377478.671945945] [xgo_offline_odom]: odom replay pose=(-3.37, -6.28, yaw=-137.5 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377483.722026425] [xgo_offline_odom]: odom replay pose=(-3.37, -6.28, yaw=-150.6 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377488.722090585] [xgo_offline_odom]: odom replay pose=(-3.37, -6.28, yaw=-158.5 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377493.722003543] [xgo_offline_odom]: odom replay pose=(-3.37, -6.28, yaw=-158.5 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377498.725804337] [xgo_offline_odom]: odom replay pose=(-3.37, -6.28, yaw=-158.5 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 501 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377503.771543622] [xgo_offline_odom]: odom replay pose=(-3.93, -6.29, yaw=+179.1 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377506.474870746] [waypoint_accuracy_monitor]: waypoint 12 raw est=(-1.40, -7.04) gt=(-3.00, +2.00), raw error=9.183m, stability=0.000m
+[xgo_offline_odom_node-1] [INFO] [1786377508.771504064] [xgo_offline_odom]: odom replay pose=(-4.01, -6.28, yaw=-173.3 deg), cmd=(+0.00 m/s, wz=+0.80 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377513.771618079] [xgo_offline_odom]: odom replay pose=(-4.62, -6.46, yaw=-164.6 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 502 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377518.824361873] [xgo_offline_odom]: odom replay pose=(-4.76, -6.51, yaw=+177.5 deg), cmd=(+0.00 m/s, wz=+0.80 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377523.871602702] [xgo_offline_odom]: odom replay pose=(-4.75, -6.41, yaw=-101.9 deg), cmd=(+0.00 m/s, wz=-0.80 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377523.875148038] [waypoint_accuracy_monitor]: waypoint 9 raw est=(-1.92, -7.62) gt=(-2.00, +2.00), raw error=9.616m, stability=0.000m
+[xgo_offline_odom_node-1] [INFO] [1786377528.921581226] [xgo_offline_odom]: odom replay pose=(-4.75, -6.41, yaw=-160.0 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377533.971727249] [xgo_offline_odom]: odom replay pose=(-4.75, -6.41, yaw=-160.0 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377539.022041049] [xgo_offline_odom]: odom replay pose=(-4.75, -6.41, yaw=-160.0 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377544.071672835] [xgo_offline_odom]: odom replay pose=(-4.75, -6.41, yaw=-160.0 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377549.071640109] [xgo_offline_odom]: odom replay pose=(-4.75, -6.41, yaw=-160.0 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377554.121183062] [xgo_offline_odom]: odom replay pose=(-4.75, -6.41, yaw=-160.0 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377559.121883882] [xgo_offline_odom]: odom replay pose=(-4.75, -6.41, yaw=+123.5 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377564.122051521] [xgo_offline_odom]: odom replay pose=(-4.80, -6.36, yaw=+132.1 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 502 range readings, expected 503
+[async_slam_toolbox_node-3] LaserRangeScan contains 504 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377569.121304463] [xgo_offline_odom]: odom replay pose=(-5.35, -5.79, yaw=+131.0 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377573.874846184] [waypoint_accuracy_monitor]: waypoint 6 raw est=(-3.02, -7.37) gt=(-1.00, +2.00), raw error=9.590m, stability=0.000m
+[xgo_offline_odom_node-1] [INFO] [1786377574.171494293] [xgo_offline_odom]: odom replay pose=(-5.52, -5.58, yaw=+121.0 deg), cmd=(+0.00 m/s, wz=-0.80 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377579.171758500] [xgo_offline_odom]: odom replay pose=(-5.25, -5.45, yaw=+28.3 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 501 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377584.171856058] [xgo_offline_odom]: odom replay pose=(-4.78, -5.22, yaw=+67.1 deg), cmd=(+0.00 m/s, wz=+0.80 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 504 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377589.221429703] [xgo_offline_odom]: odom replay pose=(-4.95, -4.95, yaw=+123.3 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377593.076215510] [waypoint_accuracy_monitor]: waypoint 5 raw est=(-2.92, -6.53) gt=(-1.00, +1.00), raw error=7.768m, stability=0.000m
+[xgo_offline_odom_node-1] [INFO] [1786377594.221145742] [xgo_offline_odom]: odom replay pose=(-4.95, -4.95, yaw=+112.3 deg), cmd=(+0.00 m/s, wz=+0.80 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 504 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377599.272113425] [xgo_offline_odom]: odom replay pose=(-5.22, -4.20, yaw=+114.5 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377604.321628545] [xgo_offline_odom]: odom replay pose=(-5.22, -4.20, yaw=+131.7 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377606.075796698] [waypoint_accuracy_monitor]: waypoint 2 raw est=(-3.57, -6.06) gt=(+0.00, +1.00), raw error=7.914m, stability=0.000m
+[xgo_offline_odom_node-1] [INFO] [1786377609.324399121] [xgo_offline_odom]: odom replay pose=(-5.22, -4.20, yaw=+6.9 deg), cmd=(+0.00 m/s, wz=-0.80 rad/s), absolute_yaw=yes
+[xgo_offline_odom_node-1] [INFO] [1786377614.371593906] [xgo_offline_odom]: odom replay pose=(-5.19, -4.19, yaw=+1.4 deg), cmd=(+0.20 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[async_slam_toolbox_node-3] LaserRangeScan contains 502 range readings, expected 503
+[async_slam_toolbox_node-3] LaserRangeScan contains 504 range readings, expected 503
+[xgo_offline_odom_node-1] [INFO] [1786377619.371523614] [xgo_offline_odom]: odom replay pose=(-4.32, -4.18, yaw=+2.7 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[waypoint_accuracy_node-4] [INFO] [1786377622.574745583] [waypoint_accuracy_monitor]: waypoint 1 raw est=(-2.92, -5.60) gt=(+0.00, +0.00), raw error=6.313m, stability=0.000m
+[waypoint_accuracy_node-4] [INFO] [1786377622.582529991] [waypoint_accuracy_monitor]: Waypoint evaluation complete: 15 marks, aligned MAE=2.457m, RMSE=2.581m, p95=3.571m, max=3.597m.
+[waypoint_accuracy_node-4] [INFO] [1786377622.585368927] [waypoint_accuracy_monitor]: Wrote waypoint evaluation to /workspaces/robot_sim_sose/evaluation/runs/bag_slam_toolbox_filtered_rtabmap_semistatic_filtered_run1_run002/metrics/waypoint_accuracy.json
+[xgo_offline_odom_node-1] [INFO] [1786377624.421764438] [xgo_offline_odom]: odom replay pose=(-4.42, -4.18, yaw=-5.4 deg), cmd=(+0.00 m/s, wz=+0.00 rad/s), absolute_yaw=yes
+[INFO] [ros2-5]: process has finished cleanly [pid 9060]
+[INFO] [launch.user]: Bag playback finished; allowing 5.0s for queued processing.
+[INFO] [waypoint_accuracy_node-4]: sending signal 'SIGINT' to process[waypoint_accuracy_node-4]
+[INFO] [async_slam_toolbox_node-3]: sending signal 'SIGINT' to process[async_slam_toolbox_node-3]
+[INFO] [dynamic_scan_filter_node-2]: sending signal 'SIGINT' to process[dynamic_scan_filter_node-2]
+[INFO] [xgo_offline_odom_node-1]: sending signal 'SIGINT' to process[xgo_offline_odom_node-1]
+[async_slam_toolbox_node-3] [INFO] [1786377633.279007573] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[async_slam_toolbox_node-3] Unregistering sensor: Custom Described Lidar
+[waypoint_accuracy_node-4] Traceback (most recent call last):
+[waypoint_accuracy_node-4]   File "/workspaces/robot_sim_sose/install/xgo_driver_bridge/lib/xgo_driver_bridge/waypoint_accuracy_node", line 33, in <module>
+[waypoint_accuracy_node-4]     sys.exit(load_entry_point('xgo-driver-bridge', 'console_scripts', 'waypoint_accuracy_node')())
+[waypoint_accuracy_node-4]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[waypoint_accuracy_node-4]   File "/workspaces/robot_sim_sose/build/xgo_driver_bridge/xgo_driver_bridge/waypoint_accuracy_node.py", line 479, in main
+[waypoint_accuracy_node-4]     rclpy.shutdown()
+[waypoint_accuracy_node-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 134, in shutdown
+[waypoint_accuracy_node-4]     _shutdown(context=context)
+[waypoint_accuracy_node-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/utilities.py", line 82, in shutdown
+[waypoint_accuracy_node-4]     context.shutdown()
+[waypoint_accuracy_node-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/context.py", line 129, in shutdown
+[waypoint_accuracy_node-4]     self.__context.shutdown()
+[waypoint_accuracy_node-4] rclpy._rclpy_pybind11.RCLError: failed to shutdown: rcl_shutdown already called on the given context, at ./src/rcl/init.c:333
+[xgo_offline_odom_node-1] Traceback (most recent call last):
+[xgo_offline_odom_node-1]   File "/workspaces/robot_sim_sose/install/xgo_driver_bridge/lib/xgo_driver_bridge/xgo_offline_odom_node", line 33, in <module>
+[xgo_offline_odom_node-1]     sys.exit(load_entry_point('xgo-driver-bridge', 'console_scripts', 'xgo_offline_odom_node')())
+[xgo_offline_odom_node-1]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[xgo_offline_odom_node-1]   File "/workspaces/robot_sim_sose/build/xgo_driver_bridge/xgo_driver_bridge/offline_odom_node.py", line 233, in main
+[xgo_offline_odom_node-1]     rclpy.shutdown()
+[xgo_offline_odom_node-1]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 134, in shutdown
+[xgo_offline_odom_node-1]     _shutdown(context=context)
+[xgo_offline_odom_node-1]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/utilities.py", line 82, in shutdown
+[xgo_offline_odom_node-1]     context.shutdown()
+[xgo_offline_odom_node-1]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/context.py", line 129, in shutdown
+[xgo_offline_odom_node-1]     self.__context.shutdown()
+[xgo_offline_odom_node-1] rclpy._rclpy_pybind11.RCLError: failed to shutdown: rcl_shutdown already called on the given context, at ./src/rcl/init.c:333
+[INFO] [async_slam_toolbox_node-3]: process has finished cleanly [pid 8997]
+[ERROR] [waypoint_accuracy_node-4]: process has died [pid 8998, exit code 1, cmd '/workspaces/robot_sim_sose/install/xgo_driver_bridge/lib/xgo_driver_bridge/waypoint_accuracy_node --ros-args -r __node:=waypoint_accuracy_monitor --params-file /tmp/launch_params_e5kab_mq'].
+[ERROR] [xgo_offline_odom_node-1]: process has died [pid 8995, exit code 1, cmd '/workspaces/robot_sim_sose/install/xgo_driver_bridge/lib/xgo_driver_bridge/xgo_offline_odom_node --ros-args -r __node:=xgo_offline_odom --params-file /tmp/launch_params_g4eibiaj'].
+[INFO] [dynamic_scan_filter_node-2]: process has finished cleanly [pid 8996]

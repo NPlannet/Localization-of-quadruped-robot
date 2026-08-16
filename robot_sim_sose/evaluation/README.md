@@ -2,18 +2,14 @@
 
 ```text
 evaluation/
-├── datasets/       Input bags and ground-truth sidecars
-├── results/        Retained metrics, maps, databases, and plots
-└── runs/           New recorder output (created on demand and Git-ignored)
+├── datasets/   Input sidecars and externally stored bags
+├── runs/       New recordings and temporary benchmark runs; Git-ignored
+├── results/    Retained metrics, maps, and plots
+└── templates/  Benchmark matrix configuration examples
 ```
 
-`datasets/w1/` contains the W1 bag and `waypoints.json`. Existing W1 outputs
-are grouped by artifact type under `results/w1/`.
+Raw MCAP bags and RTAB-Map databases are too large for ordinary Git. Archive
+them externally with a checksum. Small, presentation-relevant metrics, maps,
+and plots may be committed under `results/`.
 
-Raw bags and RTAB-Map databases are large and ignored by ordinary Git. Do not
-assume that cloning the repository transfers them; use external storage or Git
-LFS and keep checksums with archived datasets. Metrics JSON/CSV, map YAML/PGM,
-and final plots are small reproducible artifacts that may be committed.
-
-See [`../docs/evaluation.md`](../docs/evaluation.md) for recording, replay, and
-analysis commands.
+See [the evaluation guide](../docs/evaluation.md) for the workflow.

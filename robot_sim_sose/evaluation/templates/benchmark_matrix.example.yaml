@@ -1,0 +1,40 @@
+workspace: /workspaces/robot_sim_sose
+results_root: evaluation/results
+
+experiment:
+  name: slam_comparison_rtab_filtered_run_wp_1
+  repetitions: 5
+  playback_rate: 1.0
+  resource_interval: 1.0
+  post_playback_delay_sec: 5.0
+
+  # Keep visualization disabled for comparable Raspberry Pi CPU measurements.
+  start_foxglove: false
+  normalize_scan: false
+
+  # Each repetition contains all six conditions in a reproducibly shuffled order.
+  random_seed: 20260805
+  cooldown_seconds: 30
+  max_start_temperature_c: 65.0
+  max_cooldown_wait_seconds: 900
+  continue_on_failure: true
+
+  # Isolate offline replay from live robot nodes and desktop ROS applications.
+  ros_domain_id: 77
+
+bag:
+  name: rtab_filtered_run_wp_1
+  path: evaluation/runs/rtab_filtered_run_wp_1/bag_0
+  waypoints: evaluation/runs/rtab_filtered_run_wp_1/waypoints.json
+
+algorithms:
+  slam_toolbox:
+    use_camera: false
+  cartographer:
+    use_camera: false
+  rtabmap:
+    use_camera: true
+
+scan_variants:
+  - raw
+  - filtered
