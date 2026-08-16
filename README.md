@@ -23,13 +23,12 @@ robot_sim_sose/
 
 The main project packages are:
 
-- `dynamic_scan_filter`: dynamic LiDAR filtering, scan normalization, and map
-  cleanup prototype;
+- `dynamic_scan_filter`: dynamic LiDAR filtering and scan normalization;
 - `xgo_driver_bridge`: XGO SDK bridge, IMU/odometry, robot bringup, and bag
   evaluation nodes; and
 - `xgo_description`: Gazebo model, worlds, RViz, and desktop bag replay.
 
-## Desktop setup
+## Desktop setup 
 
 From `robot_sim_sose/`:
 
@@ -48,23 +47,37 @@ source install/setup.bash
 
 ## Simulation demo
 
-Run the demo script inside the built desktop container:
+Run the demo script inside the built desktop container. Select one mapping
+algorithm at a time:
 
 ```bash
-bash scripts/demo_simulation.sh
+bash scripts/demo_simulation.sh slam_method:=slam_toolbox
+bash scripts/demo_simulation.sh slam_method:=cartographer
+bash scripts/demo_simulation.sh slam_method:=rtabmap
 ```
+Every variant
+starts a moving-object Gazebo world, the dynamic LiDAR filter, the selected
+mapper, and Nav2. RTAB-Map uses the simulated RGB camera for visual loop
+recognition by default; pass `rtabmap_use_camera:=false` for LiDAR-only mapping.
 
-It starts Gazebo, the dynamic LiDAR filter, SLAM Toolbox, and Nav2. The direct
-ROS launch command is:
+Keep the selected demo running, then open two more container terminals.
+Source the workspace and start RViz in the second terminal to see the robot and
+the map:
 
 ```bash
-ros2 launch xgo_description simulation.launch.py
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+ros2 launch xgo_description rviz_slam.launch.py
 ```
 
-Pass launch arguments through the script when needed, for example
-`bash scripts/demo_simulation.sh gui:=false`. This is the maintained Gazebo
-demo; Cartographer and RTAB-Map are evaluated through the common robot/bag
-pipeline described below.
+In the third terminal, start frontier exploration so the robot automatically
+selects goals and moves through the unknown environment:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+ros2 run nav2_wfd explore
+```
 
 ## Physical robot
 
@@ -82,8 +95,8 @@ docker compose -f docker-compose.robot.yml up -d --build
 docker compose -f docker-compose.robot.yml exec xgo-robot bash
 bash scripts/robot_build_workspace.sh
 source install/setup.bash
-ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \
-  enable_motion:=false slam_method:=none
+ros2 launch xgo_driver_bridge robot_sensor_bringup.launch.py \ 
+enable_motion:=false slam_method:=none
 ```
 
 See [robot deployment](robot_sim_sose/docs/robot-deployment.md) before enabling
@@ -117,3 +130,7 @@ stored in ordinary Git.
 - [Raspberry Pi host setup](robot_sim_sose/docs/raspberry-pi-setup.md)
 - [Recording and evaluation](robot_sim_sose/docs/evaluation.md)
 - [Script reference](robot_sim_sose/scripts/README.md)
+
+
+## AI Use
+AI was used to support the implementation and structure of this repository. In Particular, Codex 5.5,5.6,both set on High, and Claude Opus 4.8 were used.
