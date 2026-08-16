@@ -188,6 +188,9 @@ def launch_setup(context):
                         'moving_confirmations': int(
                             LaunchConfiguration('moving_confirmations').perform(context)
                         ),
+                        'moving_speed_threshold': float(
+                            LaunchConfiguration('moving_speed_threshold').perform(context)
+                        ),
                     },
                 ],
             )
@@ -508,6 +511,14 @@ def generate_launch_description():
                 'dynamic_scan_filter moving_confirmations override '
                 '(frames of speed above moving_speed_threshold required '
                 'before a track is trusted moving).'
+            ),
+        ),
+        DeclareLaunchArgument(
+            'moving_speed_threshold',
+            default_value='0.1',
+            description=(
+                'dynamic_scan_filter moving_speed_threshold override '
+                '(m/s above which a track counts toward moving_confirmations).'
             ),
         ),
         OpaqueFunction(function=launch_setup),
